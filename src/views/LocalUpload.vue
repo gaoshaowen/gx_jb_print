@@ -122,10 +122,10 @@
                     <button class="el-button el-button-primary"  v-show="upload_type == 'local'"  @click="pageindex--"> 上一步 </button>
                     <button class="el-button el-button-primary"  v-show="upload_type == 'local'" @click="refleshcode_rule" > 刷新支付码 </button>
 
-
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button>
                 </div>
+                
             </div>
 
 
@@ -142,7 +142,7 @@
 //import axios from 'axios'
 // import conf from '../config_cli'
 import QRCode from 'qrcodejs2'
-import { clearTimeout } from 'timers';
+// import { clearTimeout } from 'timers';
 
 export default {
     data(){
@@ -194,7 +194,9 @@ export default {
         pageindex:function(newval, oldval) {
             if ( newval <3){
                 if ( this.timeout) {
-                    clearTimeout( this.timeout)
+                    window.clearInterval(this.timeout)
+                  //  clearTimeout( this.timeout)
+                    this.timeout =null
                 }      
             }
         },
@@ -323,7 +325,7 @@ export default {
                 this.total_fee = res.data.total_fee      
 
                 this.refleshcode_rule()
-                
+
             })
         	
         },
@@ -371,7 +373,7 @@ export default {
             this.timeout = setTimeout(() => {
 
                 if ( this.timeout){
-                    this.clearTimeout( this.timeout )
+                    window.clearInterval(this.timeout)
                     this.timeout =null
                 }
 
@@ -422,8 +424,8 @@ export default {
         },
 
     
-        h5pay(){  //H5 付款
-            
+        h5pay(){ 
+             //H5 付款
             this.axios.get( this.conf.server  +'/printapi/order', { 
                 params:{
                     total_fee:this.total_fee
@@ -457,6 +459,7 @@ export default {
 			})
 			
         },
+
 
     },
 

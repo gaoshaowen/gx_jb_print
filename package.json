@@ -1,7 +1,7 @@
 {
-  "name": "test2",
+  "name": "Shareprint",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "共享打印",
   "author": "gaoshaowen <gaoshaowen@topwisesz.com>",
   "private": true,
   "scripts": {
@@ -85,4 +85,5 @@
     "last 2 versions",
     "not ie <= 8"
   ]
+
 }
