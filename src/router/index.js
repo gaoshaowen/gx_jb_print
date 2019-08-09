@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/views/Home'
 import LocalUpload from '@/views/LocalUpload'
-
+import RemoteUpload from '@/views/RemoteUpload'
 
 
 Vue.use(Router)
@@ -18,6 +18,11 @@ export default new Router({
       path: '/localupload',
      // redirect:"/home",
       component: LocalUpload,
+    },
+    {
+      path: '/remoteupload',
+     // redirect:"/home",
+      component: RemoteUpload,
     },
 
     // {

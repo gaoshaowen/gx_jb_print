@@ -14,7 +14,7 @@
                 ref="print_file"
                 id="print_file"
                 style="display:none;"
-                accept=".xls,.pdf,.doc,.xlsx,.docx"
+           
                 />
                 
                 <div>
@@ -176,7 +176,7 @@ export default {
 
             qr_url:'', //用于打码支付
             
-            upload_type:'local', // local: 直接本地上传文件 , remote：移动端打码远程打开
+            upload_type:'remote', // local: 直接本地上传文件 , remote：移动端打码远程打开
 
             payStatus:false,
             retryCount:0,
@@ -233,7 +233,9 @@ export default {
 
     methods:{
         backhome(){
-            this.$router.replace({path:'/'});//替换路由，没有历史记录
+            this.pageindex=1
+
+            //this.$router.replace({path:'/'});//替换路由，没有历史记录
         },
 
         shensu(){  //申诉
@@ -434,6 +436,10 @@ export default {
                 } 
             })
             .then( (res) => {
+
+                this.order_id = res.data.out_trade_no
+                this.total_fee = res.data.total_fee   
+
 				let dataPost = {
 				    out_trade_no:res.data.out_trade_no, //后台生成的订单号
                     total_fee:res.data.total_fee, //交易金额

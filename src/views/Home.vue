@@ -125,7 +125,7 @@ export default {
             // }
             // console.log('url:' , url);
 
-            let qr_code=  url + 'localupload?devid=' +device_id
+            let qr_code=  url + 'RemoteUpload?devid=' +device_id
             console.log( 'qr_code:', qr_code)    
         
             let qrcode = new QRCode('qrcode', { // qrcode  html为标签id
