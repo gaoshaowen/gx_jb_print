@@ -8,13 +8,14 @@
         <div class="main">
 
             <div class="page1"  v-show="pageindex==1">
+                {{ code}}
                 <input
-                type="file"
-                @change="getFile( upload_file ,$event, 'print_file')"
-                ref="print_file"
-                id="print_file"
-                style="display:none;"
-            />
+                    type="file"
+                    @change="getFile( upload_file ,$event, 'print_file')"
+                    ref="print_file"
+                    id="print_file"
+                    style="display:none;"
+                />
                 
                 <div>
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
@@ -368,10 +369,13 @@ export default {
         getCode() {
             // 非静默授权，第一次有弹框
             const code = this.getUrlParam("code"); // 截取路径中的code，如果没有就去微信授权，如果已经获取到了就直接传code给后台获取openId
-            const local = window.location.href;
-    
+            const url = window.location.href;
+            
+            //const url = encodeURIComponent(url.split('#')[0]); //获取#之前的当前路径
+            const url = encodeURIComponent(url); 
+
             if (code == null || code == "") {
-                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${encodeURIComponent(local)}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${url}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
             } else {
                 //return code
 
@@ -403,17 +407,17 @@ export default {
           
             this.axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.APPID}&secret=${this.SECRET}&code=${code}&grant_type=authorization_code`).then(res => {
                 console.log(res);
-                let userId ;
+                let openid ;
                 if (res.data.code == 2000) {
-                    userId = res.data.data;
+                    openid = res.data.data;
                 }else{
                     console.log(res);
                     return;
                 }
                 
-                this.openid = userid 
+                this.openid = openid 
 
-                localStorage.setItem("userId", userId);
+                localStorage.setItem("openid", openid);
                // _this.getindexOne(userId);
             });
         },
@@ -491,7 +495,11 @@ export default {
 
     mounted(){
 
-        this.getCode();
+        this.openid = localStorage.getItem("openid");
+
+        if ( !this.openid )
+            this.getCode();
+
 
         console.log( this.$route.query)
 
