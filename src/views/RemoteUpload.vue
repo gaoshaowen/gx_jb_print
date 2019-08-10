@@ -14,8 +14,7 @@
                 ref="print_file"
                 id="print_file"
                 style="display:none;"
-           
-                />
+            />
                 
                 <div>
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
@@ -121,7 +120,6 @@
 
                 <div class="footer">
                     <button class="el-button el-button-primary"  v-show="upload_type == 'local'"  @click="pageindex--"> 上一步 </button>
-                    <button class="el-button el-button-primary"  v-show="upload_type == 'local'" @click="refleshcode_rule" > 刷新支付码 </button>
 
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button>
@@ -139,11 +137,8 @@
 
 
 <script>
-
-//import axios from 'axios'
-// import conf from '../config_cli'
+	
 import QRCode from 'qrcodejs2'
-// import { clearTimeout } from 'timers';
 
 export default {
     data(){
@@ -186,6 +181,9 @@ export default {
             timeout:null,
 
             device_id:'',
+
+            code :'',
+            openid:'',
 
         }
     
@@ -307,63 +305,7 @@ export default {
         pay(){
             this.payStatus=false
             this.retryCount=0
-
-            if ( this.upload_type == 'local') {
-                this.nativepay()  //生成二维码
-            }else {
-                this.h5pay()
-            }
-        },
-
-        nativepay(){  //二维码生成
-
-            this.axios.get( this.conf.server +'/printapi/order', {
-                params:{
-                    total_fee:this.total_fee
-                }
-            }).then(res => {
-
-                console.log(res.data)
-
-                this.order_id = res.data.out_trade_no
-                this.total_fee = res.data.total_fee      
-
-                this.refleshcode_rule()
-
-            })
-        	
-        },
-
-        refleshcode_rule(){
-            let dataPost = {
-				    out_trade_no:this.order_id, //后台生成的订单号
-                    total_fee:this.total_fee, //交易金额
-                    product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
-            }
-
-
-            this.axios.get(this.conf.server + '/pay/wxpay/unifiedOrder',
-                {params: dataPost}
-            ).then(res => {
-                let data = res.data
-                //返回的二维码信息，需要自己转为二维码图片
-                this.qr_url = data.code_url
-                this.order_id = data.order_id
-
-                this.pageindex=3
-
-                this.generateqr()
-
-                //根据订单号向后台循环查询交易是否成功
-                this.handleCheckBill(data.order_id)
-    
-                    
-            }).catch(err =>{
-                console.log(err)
-                this.$throwError(err)
-            })
-
-
+            this.h5pay()    
         },
 
 
@@ -428,8 +370,89 @@ export default {
         },
 
     
+        getCode() {
+            // 非静默授权，第一次有弹框
+            const code = this.getUrlParam("code"); // 截取路径中的code，如果没有就去微信授权，如果已经获取到了就直接传code给后台获取openId
+            const local = window.location.href;
+            const APPID = "wwcxxxxxxxxxx"; // 企业微信
+
+            if (code == null || code == "") {
+                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${APPID}&redirect_uri=${encodeURIComponent(local)}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+            } else {
+                //return code
+
+                this.code = code 
+                console.log(code);
+              //  this.getOpenId(code); //把code传给后台获取用户信息
+  
+            }
+        },
+
+        getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+
+            var r = window.location.search.substr(1).match(reg);
+            console.log(r);
+
+            if (r != null) return unescape(r[2]);
+
+            return null;
+        },
+
+        getOpenId(code) {
+            // 通过code获取 openId等用户信息，/api/user/wechat/login 为后台接口
+            let _this = this;
+            console.log(code);
+            let param = {
+                code: code
+            };
+            api("/app/weChat/getUserId", "get", param).then(res => {
+                console.log(res);
+                let userId ;
+                if (res.data.code == 2000) {
+                    userId = res.data.data;
+                }else{
+                    console.log(res);
+                    return;
+                }
+                
+                this.openid = userid 
+
+                localStorage.setItem("userId", userId);
+                _this.getindexOne(userId);
+            });
+        },
+
+        getindexOne(userId) {
+            let params = {
+                'channel': "qyvx",
+                'openID': userId
+            };
+            api("/app/arrange/judgeOrder", "get", params).then(res => {
+                if (res.data.data == 0) {
+                this.$router.push({ name: "index" });
+                //   window.location.replace("/#/index");
+                } else {
+                this.$router.push({ name: "about" });
+                //   window.location.replace("/#/about");
+                }
+            });
+        },
+
         h5pay(){ 
              //H5 付款
+            let appid =''
+            let redirect_uri=encodeURIComponent('')
+
+            // 1、引导用户进入授权页面同意授权，获取code
+            let url=`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_base&state=123#wechat_redirect`
+
+            // 2、通过code换取网页授权access_token（与基础支持中的access_token不同）
+
+            // 3、如果需要，开发者可以刷新网页授权access_token，避免过期
+
+            // 4、通过网页授权access_token和openid获取用户基本信息（支持UnionID机制）
+
             this.axios.get( this.conf.server  +'/printapi/order', { 
                 params:{
                     total_fee:this.total_fee
@@ -472,7 +495,9 @@ export default {
     },
 
     mounted(){
-     
+
+        this.getCode();
+
         // this.axios.get( 'http://tms.topwisesz.com:8989/api/user/clientip'
         // //this.axios.get(this.conf.server + '/pay/wxpay/unifiedOrder',
 
