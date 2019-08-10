@@ -184,7 +184,8 @@ export default {
 
             code :'',
             openid:'',
-
+            APPID:'wx2e26e56dba09323b',
+            SECRET:'',
         }
     
     },
@@ -263,12 +264,6 @@ export default {
             let extname =  event.target.files[0].name.substring(lastindex)
             extname =extname.toLowerCase();
 
-            // if (extname !='.webp' && extname !='.bmp' && extname !='.jpg' && extname !='.jpeg' && extname !='.png'  && extname !='.tif'  && extname !='.gif' && extname !='.ico' ){
-            //     this.$alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
-            //     return 
-            // }
-
-        
             upload_file.ufile = file;
             upload_file.filename = file.name;
 
@@ -374,10 +369,9 @@ export default {
             // 非静默授权，第一次有弹框
             const code = this.getUrlParam("code"); // 截取路径中的code，如果没有就去微信授权，如果已经获取到了就直接传code给后台获取openId
             const local = window.location.href;
-            const APPID = "wwcxxxxxxxxxx"; // 企业微信
-
+    
             if (code == null || code == "") {
-                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${APPID}&redirect_uri=${encodeURIComponent(local)}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${encodeURIComponent(local)}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
             } else {
                 //return code
 
@@ -389,6 +383,9 @@ export default {
         },
 
         getUrlParam(name) {
+            // 如果用户同意授权，页面将跳转至 redirect_uri/?code=CODE&state=STATE。
+            // code说明 ： code作为换取access_token的票据，每次用户授权带上的code将不一样，code只能使用一次，5分钟未被使用自动过期。
+
             var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
 
             var r = window.location.search.substr(1).match(reg);
@@ -403,10 +400,8 @@ export default {
             // 通过code获取 openId等用户信息，/api/user/wechat/login 为后台接口
             let _this = this;
             console.log(code);
-            let param = {
-                code: code
-            };
-            api("/app/weChat/getUserId", "get", param).then(res => {
+          
+            this.axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.APPID}&secret=${this.SECRET}&code=${code}&grant_type=authorization_code`).then(res => {
                 console.log(res);
                 let userId ;
                 if (res.data.code == 2000) {
@@ -419,7 +414,7 @@ export default {
                 this.openid = userid 
 
                 localStorage.setItem("userId", userId);
-                _this.getindexOne(userId);
+               // _this.getindexOne(userId);
             });
         },
 
@@ -497,18 +492,6 @@ export default {
     mounted(){
 
         this.getCode();
-
-        // this.axios.get( 'http://tms.topwisesz.com:8989/api/user/clientip'
-        // //this.axios.get(this.conf.server + '/pay/wxpay/unifiedOrder',
-
-        // ).then(res => {
-        //     let data = res.data
-        //     console.log('clientip:', data)
-                
-        // }).catch(err =>{
-        //     console.log(err)
-        //     this.$throwError(err)
-        // })
 
         console.log( this.$route.query)
 
