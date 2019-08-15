@@ -372,7 +372,11 @@ export default {
             var url = window.location.href;
             
             //const url = encodeURIComponent(url.split('#')[0]); //获取#之前的当前路径
+<<<<<<< HEAD
             url = encodeURIComponent(url); 
+=======
+             url = encodeURIComponent(url); 
+>>>>>>> a539fb9c5cdea44822cd81c0d673bd263638458b
 
             if (code == null || code == "") {
                 window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${url}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
