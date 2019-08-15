@@ -369,10 +369,10 @@ export default {
         getCode() {
             // 非静默授权，第一次有弹框
             const code = this.getUrlParam("code"); // 截取路径中的code，如果没有就去微信授权，如果已经获取到了就直接传code给后台获取openId
-            const url = window.location.href;
+            var url = window.location.href;
             
             //const url = encodeURIComponent(url.split('#')[0]); //获取#之前的当前路径
-            const url = encodeURIComponent(url); 
+            url = encodeURIComponent(url); 
 
             if (code == null || code == "") {
                 window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${url}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;

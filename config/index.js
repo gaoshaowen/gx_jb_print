@@ -3,13 +3,15 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
+const conf = require('../src/config_cli')
+
 
 module.exports = {
   dev: {
 
     // Paths
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: conf.virtualpath,
     proxyTable: {
       '/api': {
         target: 'http://localhost:8989/',//设置你调用的接口域名和端口号 
@@ -52,7 +54,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: conf.virtualpath,//'/zhifu/',
 
     /**
      * Source Maps

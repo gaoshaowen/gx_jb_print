@@ -1,0 +1,39 @@
+{
+  "name": "shareprint",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "window" : { 
+
+    "fullscreen": true,
+    "toolbar": false,
+    "frame": false, 
+    
+    "position": "center",
+
+    "width":1400,
+    "height":900,
+
+    "min_width": 800,
+
+    "min_height": 600,
+
+    "max_width": 1920,
+
+    "max_height": 1080,
+
+    "show_in_taskbar":false
+
+  },
+
+  "webkit": {
+    "plugin": true,  
+    "page-cache":false
+  },
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "gaoshaowen",
+  "license": "ISC"
+}

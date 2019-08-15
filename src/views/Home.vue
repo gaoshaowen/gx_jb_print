@@ -20,7 +20,7 @@
 
         <div class="flexitem">
             <router-link :to="'/localupload?devid=' + device_id"  >
-                <img src="/static/lunbo/1.jpg"  />
+                <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
             </router-link>
         </div>
 
@@ -50,6 +50,7 @@
 <script>
 
 import QRCode from 'qrcodejs2'
+import conf from '../config_cli'
 
 export default {
     data(){
@@ -92,8 +93,8 @@ export default {
             },
 
             swipers:[
-                {url:'static/lunbo',img:'/static/lunbo/1.jpg'},
-                {url:'static/lunbo',img:'/static/lunbo/2.jpg'}
+                {url:'static/lunbo',img: conf.virtualpath +'static/lunbo/1.jpg'},
+                {url:'static/lunbo',img:conf.virtualpath +'static/lunbo/2.jpg'}
             ],
 
             device_id:'3b6e9e3694a243214afcbebc18121310',
@@ -147,17 +148,24 @@ export default {
         // console.log('this is current swiper instance object', this.swiper)
         // this.swiper.slideTo(0, 1000, false)
         //鼠标覆盖停止自动切换
-          this.swiper.el.onmouseover = function () {
+        this.swiper.el.onmouseover = function () {
             this.swiper.autoplay.stop();
-          };
+        };
 
-          //鼠标离开开始自动切换
-          this.swiper.el.onmouseout = function () {
+        //鼠标离开开始自动切换
+        this.swiper.el.onmouseout = function () {
             this.swiper.autoplay.start();
-          };
+        };
 
-         //得到设备ID
-         this.generateqr(this.device_id)
+        
+        if ( this.$route.query.devid ){
+            this.device_id =this.$route.query.devid
+        }
+        console.log('home device_id: ', this.device_id )
+        localStorage.setItem("device_id", this.device_id);
+
+        //得到设备ID
+        this.generateqr(this.device_id)
  
     }
 

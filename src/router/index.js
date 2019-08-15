@@ -3,11 +3,13 @@ import Router from 'vue-router'
 import Home from '@/views/Home'
 import LocalUpload from '@/views/LocalUpload'
 import RemoteUpload from '@/views/RemoteUpload'
-
+import conf from '../config_cli'
 
 Vue.use(Router)
 
 export default new Router({
+  mode:'history',
+  base: conf.virtualpath , //'/zhifu/',
   routes: [
     {
       path: '/',

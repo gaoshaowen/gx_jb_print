@@ -242,6 +242,13 @@ export default {
         },
         selectfile(ref) {
             document.getElementById(ref).click()
+
+            // const {dialog} = require('electron').remote;
+
+            // dialog.showOpenDialog({properties: ['openFile', 'multiSelections']},function(e){
+            //     inputFiles(e,2)
+            // })
+
           //  this.$refs[ref].dispatchEvent(new MouseEvent("click"));
         },
 
@@ -461,7 +468,7 @@ export default {
 			})
 			
         },
-
+        
 
     },
 
@@ -481,9 +488,11 @@ export default {
 
         console.log( this.$route.query)
 
-        if ( this.$route.query.devid ){
-            this.device_id =this.$route.query.devid
-        }
+        // if ( this.$route.query.devid ){
+        //     this.device_id =this.$route.query.devid
+        // }
+        this.device_id =localStorage.getItem("device_id");
+
 
         console.log('device_id: ', this.device_id )
 
