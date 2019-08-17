@@ -11,13 +11,34 @@ export default {
   name: 'App',
   data: function () {
     return {
-      menuList: [
-        { name: '首页', url: '/home' },
-        { name: '用户', url: '/user/19' },
-        { name: '产品', url: '/product/20' }
-      ]
+
+      device_id:'3b6e9e3694a243214afcbebc18121310',
+
+      
     }
-  }
+
+  },
+
+  methods:{
+
+
+
+
+  },
+
+  mounted() {
+
+    if ( this.$route.query.devid ){
+        this.device_id =this.$route.query.devid
+    }
+    console.log('app device_id: ', this.device_id )
+    localStorage.setItem("device_id", this.device_id);
+
+
+
+  },
+
+
 }
 </script>
 

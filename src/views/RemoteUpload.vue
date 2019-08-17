@@ -19,7 +19,7 @@
                 
                 <div>
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
-                   
+                 
                 </div>
                
                 <div v-show="upload_file.filename"> 
@@ -36,7 +36,11 @@
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">
-                    <button class="el-button el-button-primary"   @click="pageindex++"> 提交订单 </button>
+                    <!-- <button class="el-button el-button-primary"   @click="pageindex++"> 提交订单 </button> -->
+
+                    <button class="el-button el-button-primary"   @click="uploadfile"> 上传该文件 </button>
+                    <button class="el-button el-button-primary"  @click="tongbufile"   v-show="upload_file.url" > 同步文件</button>
+
                 </div>
                 
             </div>
@@ -184,7 +188,7 @@ export default {
 
             device_id:'',
 
-            msg1:'hello ',
+            openid:'hello ',
 
         }
     
@@ -283,6 +287,41 @@ export default {
             }
 
             this.$refs[ref].value = "";
+
+        },
+
+        uploadfile(){  //确定要打印当前文件同步到平板上
+            //1. 上传文件
+            //2. 把上传的文件URL 同步到平板电脑显示
+            
+          
+            //2. 同步 
+            this.tongbufile()
+
+        },
+
+        tongbufile(){
+
+            this.$socket.emit('remoteupload',{devid:this.device_id });
+
+            if ( ! this.upload_file.filename){
+                alert('请选择文件再同步')
+                return
+            }
+
+            let obj ={
+                devid: this.device_id,
+                upload_file:{  
+                    filename:  this.upload_file.filename,
+                    size:  this.upload_file.size,
+                    unit:  this.upload_file.unit,
+                    url: this.upload_file.url
+                }
+
+            }
+
+            this.$socket.emit('tongbufile',obj );
+    
 
         },
 
@@ -533,7 +572,6 @@ export default {
                 
 			})
 
-
            
         },
 
@@ -578,6 +616,20 @@ export default {
         if ( this.pageindex>=3 && this.order_id  ){
             this.handleCheckBill(this.order_id)
         }
+
+
+        this.$socket.emit('remoteupload',{devid:this.device_id });
+
+        this.sockets.subscribe('tongbufile_back', (data ) => {
+            console.log('tongbufile_back:', data)
+            
+            if ( data.code ){
+                console.log('同步成功')
+            }else{
+                console.log('同步失败:' , data.msg)
+            }
+
+        })
 
     }
 

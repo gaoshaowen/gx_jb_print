@@ -114,7 +114,8 @@ export default {
     },
 
     methods:{
-        localupload(){
+
+        localupload(){ //导航到本地
             if (  this.timeout)
             {
                 window.clearTimeout(this.timeout)
@@ -123,7 +124,7 @@ export default {
             this.$router.push('/localupload?devid=' + this.device_id)
         },
 
-       generateqr(device_id){
+        generateqr(device_id){
            
             let url = window.location.href;
             let index = url.indexOf('?')
@@ -131,13 +132,6 @@ export default {
             if ( index>0){
                 url =url.substring(0, index)
             }
-            
-            // console.log('url:' , url);
-
-            // if (url.substring(url.length -1,1 )== '/'){
-            //     url = url.substring(0, url.length -2)
-            // }
-            // console.log('url:' , url);
 
             let qr_code=  url + 'RemoteUpload?devid=' +device_id
             console.log( 'qr_code:', qr_code)    
@@ -156,7 +150,6 @@ export default {
 
         myrefresh(){
             // 自升级
-
             window.location.reload();
         }
 
@@ -165,7 +158,7 @@ export default {
 
     mounted() {
 
-        this.timeout = setTimeout(this.myrefresh , 60000); //指定1fen刷新一次
+        this.timeout = setTimeout(this.myrefresh , 3600000); //指定1fen刷新一次
 
         setInterval( ()=>{
             //可以写获取轮播图片,
@@ -173,15 +166,10 @@ export default {
         } , 30000)  //每分钟获取一次
 
 
-        // you can use current swiper instance object to do something(swiper methods)
-        // 然后你就可以使用当前上下文内的swiper对象去做你想做的事了
-        // console.log('this is current swiper instance object', this.swiper)
-        // this.swiper.slideTo(0, 1000, false)
         //鼠标覆盖停止自动切换
         this.swiper.el.onmouseover = function () {
             this.swiper.autoplay.stop();
         };
-
 
         //鼠标离开开始自动切换
         this.swiper.el.onmouseout = function () {
@@ -197,10 +185,36 @@ export default {
 
         localStorage.setItem("home", window.location.href); 
 
+
+        this.$socket.emit('login',{devid:this.device_id });
+
+
+        //接收服务端的信息
+        this.sockets.subscribe('login_back', (data) => {
+            console.log('login_back:', data)
+
+        })
+
+
+        this.sockets.subscribe('openremoteupload', (data) => {
+
+            if ( this.timeout)
+            {
+                window.clearTimeout(this.timeout)
+                this.timeout =null 
+            }
+
+            this.$router.push('/remoteupload2?devid=' + this.device_id)
+            
+        })
+
+
         //得到设备ID
         this.generateqr(this.device_id)
  
     }
+
+
 
 
 }

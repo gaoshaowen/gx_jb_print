@@ -8,15 +8,6 @@ import axios from 'axios';
 import VueAxios from 'vue-axios' ;
 import conf from './config_cli'
 
-console.log( conf.server)
-
-//import _Global from './Global.vue'
-
-// const instance = axios.create({
-//   baseURL:  process.env.API_HOST,
-//   timeout: 60000,
-//   headers: {'X-Custom-Header': 'foobar'}
-// });
 
 Vue.prototype.conf =conf
 
@@ -35,6 +26,13 @@ axios.interceptors.request.use(
   }
 )
 
+import VueSocketIO from 'vue-socket.io'
+Vue.use(new VueSocketIO({
+    debug: true,
+    connection: 'http://localhost:3000',
+    vuex: {
+    }
+}))
 
 
 Vue.config.productionTip = false
