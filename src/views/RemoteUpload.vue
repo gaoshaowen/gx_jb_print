@@ -8,17 +8,18 @@
         <div class="main">
 
             <div class="page1"  v-show="pageindex==1">
-                {{ code}}
                 <input
-                    type="file"
-                    @change="getFile( upload_file ,$event, 'print_file')"
-                    ref="print_file"
-                    id="print_file"
-                    style="display:none;"
+                type="file"
+                @change="getFile( upload_file ,$event, 'print_file')"
+                ref="print_file"
+                id="print_file"
+                style="display:none;"
+           
                 />
                 
                 <div>
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
+                   
                 </div>
                
                 <div v-show="upload_file.filename"> 
@@ -105,23 +106,19 @@
 
                 <div class="footer">
                     <button class="el-button el-button-primary"   @click="pageindex--"> 上一步 </button>
-                    <button class="el-button el-button-primary"   @click="pay"> 支付 </button>
+                    <button class="el-button el-button-primary" :disabled="! openid"   @click="callpay"> 立即支付 </button>
                 </div>
             
             </div>
 
             <div class ="page3" v-show="pageindex==3">
-                <div v-show="upload_type == 'local'" >
-                    <div id="qrcode"  ref="qrcode" style="display:inline-block;"></div>
-                </div>
-                
+            
                 <div >
                     {{ print_status}}
                 </div>
 
                 <div class="footer">
                     <button class="el-button el-button-primary"  v-show="upload_type == 'local'"  @click="pageindex--"> 上一步 </button>
-
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button>
                 </div>
@@ -138,8 +135,12 @@
 
 
 <script>
-	
+
+//import axios from 'axios'
+// import conf from '../config_cli'
 import QRCode from 'qrcodejs2'
+//import { clearScreenDown } from 'readline';
+// import { clearTimeout } from 'timers';
 
 export default {
     data(){
@@ -183,10 +184,8 @@ export default {
 
             device_id:'',
 
-            code :'',
-            openid:'',
-            APPID:'wx2e26e56dba09323b',
-            SECRET:'',
+            msg1:'hello ',
+
         }
     
     },
@@ -242,6 +241,7 @@ export default {
 
 
         },
+
         selectfile(ref) {
             document.getElementById(ref).click()
           //  this.$refs[ref].dispatchEvent(new MouseEvent("click"));
@@ -265,6 +265,12 @@ export default {
             let extname =  event.target.files[0].name.substring(lastindex)
             extname =extname.toLowerCase();
 
+            // if (extname !='.webp' && extname !='.bmp' && extname !='.jpg' && extname !='.jpeg' && extname !='.png'  && extname !='.tif'  && extname !='.gif' && extname !='.ico' ){
+            //     this.$alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
+            //     return 
+            // }
+
+        
             upload_file.ufile = file;
             upload_file.filename = file.name;
 
@@ -296,12 +302,6 @@ export default {
             // foreground: '#ff0'
             })
  
-        },
-
-        pay(){
-            this.payStatus=false
-            this.retryCount=0
-            this.h5pay()    
         },
 
 
@@ -365,28 +365,39 @@ export default {
 
         },
 
-    
+
         getCode() {
             // 非静默授权，第一次有弹框
             const code = this.getUrlParam("code"); // 截取路径中的code，如果没有就去微信授权，如果已经获取到了就直接传code给后台获取openId
             var url = window.location.href;
-            
             //const url = encodeURIComponent(url.split('#')[0]); //获取#之前的当前路径
             url = encodeURIComponent(url); 
 
             if (code == null || code == "") {
-                window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${url}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+            window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.APPID}&redirect_uri=${url}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
             } else {
-                //return code
+            //return code
 
-                this.code = code 
-                console.log(code);
-              //  this.getOpenId(code); //把code传给后台获取用户信息
-  
+            this.code = code 
+            console.log(code);
+            // this.getOpenId(code); //把code传给后台获取用户信息
             }
         },
 
         getUrlParam(name) {
+            // 如果用户同意授权，页面将跳转至 redirect_uri/?code=CODE&state=STATE。
+            // code说明 ： code作为换取access_token的票据，每次用户授权带上的code将不一样，code只能使用一次，5分钟未被使用自动过期。
+
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+
+            var r = window.location.search.substr(1).match(reg);
+            console.log(r);
+
+            if (r != null) return unescape(r[2]);
+
+            return null;
+            },
+            getUrlParam(name) {
             // 如果用户同意授权，页面将跳转至 redirect_uri/?code=CODE&state=STATE。
             // code说明 ： code作为换取access_token的票据，每次用户授权带上的code将不一样，code只能使用一次，5分钟未被使用自动过期。
 
@@ -404,54 +415,45 @@ export default {
             // 通过code获取 openId等用户信息，/api/user/wechat/login 为后台接口
             let _this = this;
             console.log(code);
-          
             this.axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.APPID}&secret=${this.SECRET}&code=${code}&grant_type=authorization_code`).then(res => {
-                console.log(res);
-                let openid ;
-                if (res.data.code == 2000) {
-                    openid = res.data.data;
-                }else{
-                    console.log(res);
-                    return;
-                }
-                
-                this.openid = openid 
+            console.log(res);
+            let openid ;
+            if (res.data.code == 2000) {
+            openid = res.data.data;
+            }else{
+            console.log(res);
+            return;
+            }
+            this.openid = openid 
 
-                localStorage.setItem("openid", openid);
-               // _this.getindexOne(userId);
+            localStorage.setItem("openid", openid);
+            // _this.getindexOne(userId);
             });
         },
 
         getindexOne(userId) {
             let params = {
-                'channel': "qyvx",
-                'openID': userId
+            'channel': "qyvx",
+            'openID': userId
             };
             api("/app/arrange/judgeOrder", "get", params).then(res => {
-                if (res.data.data == 0) {
-                this.$router.push({ name: "index" });
-                //   window.location.replace("/#/index");
-                } else {
-                this.$router.push({ name: "about" });
-                //   window.location.replace("/#/about");
-                }
+            if (res.data.data == 0) {
+            this.$router.push({ name: "index" });
+            // window.location.replace("/#/index");
+            } else {
+            this.$router.push({ name: "about" });
+            // window.location.replace("/#/about");
+            }
             });
         },
 
-        h5pay(){ 
-             //H5 付款
-            let appid =''
-            let redirect_uri=encodeURIComponent('')
 
-            // 1、引导用户进入授权页面同意授权，获取code
-            let url=`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_base&state=123#wechat_redirect`
-
-            // 2、通过code换取网页授权access_token（与基础支持中的access_token不同）
-
-            // 3、如果需要，开发者可以刷新网页授权access_token，避免过期
-
-            // 4、通过网页授权access_token和openid获取用户基本信息（支持UnionID机制）
-
+    
+        //调用微信JS api 支付
+        jsApiCall()
+        {
+            
+            //统一下单   H5 付款
             this.axios.get( this.conf.server  +'/printapi/order', { 
                 params:{
                     total_fee:this.total_fee
@@ -465,21 +467,64 @@ export default {
 				let dataPost = {
 				    out_trade_no:res.data.out_trade_no, //后台生成的订单号
                     total_fee:res.data.total_fee, //交易金额
+                    openid: this.openid
                 }
+
+                this.pageindex =3
+                this.handleCheckBill( this.order_id);
                 
 				//请求到node 层unifiedOrder
-                return  this.axios.get(this.conf.server+'/pay/wxpay/unifiedOrder/',{ params: dataPost})
+                this.axios.get(this.conf.server+'/pay/wxpay/unifiedOrder/',{ params: dataPost})
                 .then(res=>{
-                    //返回的支付地址拼接上redirect_url，支付完返回到原来的页面时，如果有需要查询支付结果，可利用query的checkBill字段去发起查询 
-                  
-                    let url = window.location.href;
-                    let index = url.indexOf('?')
+             
+                    var prepay_id = res.data.prepay_id  //商户订单
+                    console.log( prepay_id)
 
-                    if ( index>0){
-                        url =url.substring(0, index)
-                    }
-      
-                    window.location.href=(res.data.next+'&redirect_url='+encodeURI(url+`?upload_type=${this.upload_type}pageindex=3&order_id=${res.data.order_id}`))
+                    WeixinJSBridge.invoke(
+                        'getBrandWCPayRequest', {
+                             ...res.data.jsapiobj,
+
+                            // "appId":"wx2421b1c4370ec43b",     //公众号名称，由商户传入     
+                            // "timeStamp":"1395712654",         //时间戳，自1970年以来的秒数     
+                            // "nonceStr":"e61463f8efa94090b1f366cccfbbb444", //随机串     
+                            // "package":"prepay_id=u802345jgfjsdfgsdg888",     
+                            // "signType":"MD5",         //微信签名方式：     
+                            // "paySign":"70EA570631E4BB79628FBCA90534C63FF7FADD89" //微信签名 
+                        },
+                        async function(res){
+                            if(res.err_msg == "get_brand_wcpay_request:ok" ){
+
+                                //更新订单支付状态
+                                try{
+                                    let res =await this.axios.post({
+                                        url: api_url+'/printapi/orderpaystatus',
+                                        data: {
+                                        pay_account: info.openid,  //用户在商户appid下的唯一标识  
+                                        order_id: info.out_trade_no,  //商户订单号
+                                        pay_order: info.transaction_id, //微信交易流水号 
+                                        pay_status: 1, //交易状态
+                                        }
+                                    })
+
+                                    console.log(res.data)
+
+                                    if ( res.data.code ){
+
+                                        handleCheckBill( this.order_id)
+                                    }
+                                                    
+
+                                }
+                                catch (e) {
+                                    console.log(e)
+                                }
+
+                                // 使用以上方式判断前端返回,微信团队郑重提示：
+                                //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+                            }
+                        
+                    })
+                  
                 }).catch(err => {
                     
                     alert('支付失败！'+ err )
@@ -487,19 +532,28 @@ export default {
                 })
                 
 			})
-			
+
+
+           
         },
 
+        callpay(){
+            if (typeof WeixinJSBridge == "undefined"){
+                if( document.addEventListener ){
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                }else if (document.attachEvent){
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall); 
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
+            }else{
+                jsApiCall();
+            }
+        }
 
     },
 
-    mounted(){
 
-        this.openid = localStorage.getItem("openid");
-
-        if ( !this.openid )
-            this.getCode();
-
+    mounted(){    
 
         console.log( this.$route.query)
 
