@@ -9,15 +9,17 @@
 
             <div class="page1"  v-show="pageindex==1">
                 <input
-                type="file"
-                @change="getFile( upload_file ,$event, 'print_file')"
-                ref="print_file"
-                id="print_file"
-                style="display:none;"
-                accept=".xls,.pdf,.doc,.xlsx,.docx"
+                    type="file"
+                    @change="getFile( upload_file ,$event, 'print_file')"
+                    ref="print_file"
+                    id="print_file"
+                    style="display:none;"
+                    accept=".xls,.pdf,.doc,.xlsx,.docx"
                 />
                 
                 <div>
+                    <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
+
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
                 </div>
                
@@ -34,7 +36,7 @@
 
                 </div>
 
-                <div class="footer" v-show="upload_file.filename">
+                <div class="footer" v-show="upload_file.filename">       
                     <button class="el-button el-button-primary"   @click="pageindex++"> 提交订单 </button>
                 </div>
                 
@@ -97,15 +99,15 @@
                                <input type="radio"   v-model="pay_type"  :value="item.id"  :key="ind"/> {{ item.text }} 
                            </template>
 
-                            {{pay_type}}
                         </div>
                     </div> 
                     
                 </div>
 
                 <div class="footer">
+                    <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <button class="el-button el-button-primary"   @click="pageindex--"> 上一步 </button>
-                    <button class="el-button el-button-primary"   @click="pay"> 支付 </button>
+                    <button class="el-button el-button-primary"   @click="nativepay"> 立即支付 </button>
                 </div>
             
             </div>
@@ -120,15 +122,12 @@
                 </div>
 
                 <div class="footer">
-                    <button class="el-button el-button-primary"  v-show="upload_type == 'local'"  @click="pageindex--"> 上一步 </button>
                     <button class="el-button el-button-primary"  v-show="upload_type == 'local'" @click="refleshcode_rule" > 刷新支付码 </button>
-
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
-                    <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button>
+                    <!-- <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button> -->
                 </div>
                 
             </div>
-
 
         </div>
         
@@ -143,6 +142,8 @@
 //import axios from 'axios'
 // import conf from '../config_cli'
 import QRCode from 'qrcodejs2'
+import { setInterval } from 'timers';
+import { stringify } from 'querystring';
 // import { clearTimeout } from 'timers';
 
 export default {
@@ -170,8 +171,8 @@ export default {
 
             total_fee:0.01,
 
-            pay_type:1,
-            pay_types:[ {id:1, text:'微信'}],
+            pay_type:'weixin',
+            pay_types:[ {id:'weixin', text:'微信'}],
 
 
             qr_url:'', //用于打码支付
@@ -179,8 +180,7 @@ export default {
             upload_type:'local', // local: 直接本地上传文件 , remote：移动端打码远程打开
 
             payStatus:false,
-            retryCount:0,
-            print_status_id:1,
+            print_status_id:0,
 
             order_id:'',
             timeout:null,
@@ -206,6 +206,8 @@ export default {
             if ( newval ){
                 if ( this.print_status_id <1 )
                     this.print_status_id = 1
+            }else {
+                this.print_status_id = 0;
             }
         },
 
@@ -233,23 +235,23 @@ export default {
 
     methods:{
         backhome(){
-            this.$router.replace({path:'/'});//替换路由，没有历史记录
+            if ( this.timeout){
+                window.clearInterval(this.timeout)
+                //  clearTimeout( this.timeout)
+                this.timeout =null
+            }
+            console.log(localStorage.getItem("home"))
+            window.location.href =localStorage.getItem("home"); 
+
+          //  this.$router.replace({path:'/'});//替换路由，没有历史记录
         },
 
         shensu(){  //申诉
 
-
         },
+
         selectfile(ref) {
             document.getElementById(ref).click()
-
-            // const {dialog} = require('electron').remote;
-
-            // dialog.showOpenDialog({properties: ['openFile', 'multiSelections']},function(e){
-            //     inputFiles(e,2)
-            // })
-
-          //  this.$refs[ref].dispatchEvent(new MouseEvent("click"));
         },
 
         getFile(upload_file , event, ref) {
@@ -309,29 +311,24 @@ export default {
  
         },
 
-        pay(){
-            this.payStatus=false
-            this.retryCount=0
-
-            if ( this.upload_type == 'local') {
-                this.nativepay()  //生成二维码
-            }else {
-                this.h5pay()
-            }
-        },
-
         nativepay(){  //二维码生成
 
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
-                    total_fee:this.total_fee
+                    total_fee:this.total_fee,
+                    dev_id: this.device_id,
+                    pay_type: this.pay_type,
+                    file_url: this.upload_file.url,
+                    print_args: JSON.stringify(this.print_args)
                 }
             }).then(res => {
 
                 console.log(res.data)
 
                 this.order_id = res.data.out_trade_no
-                this.total_fee = res.data.total_fee      
+                this.total_fee = res.data.total_fee     
+
+                console.log('order_id:', this.order_id)
 
                 this.refleshcode_rule()
 
@@ -341,11 +338,10 @@ export default {
 
         refleshcode_rule(){
             let dataPost = {
-				    out_trade_no:this.order_id, //后台生成的订单号
-                    total_fee:this.total_fee, //交易金额
-                    product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
+                out_trade_no:this.order_id, //后台生成的订单号
+                total_fee:this.total_fee, //交易金额
+                product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
             }
-
 
             this.axios.get(this.conf.server + '/pay/wxpay/unifiedOrder',
                 {params: dataPost}
@@ -360,7 +356,7 @@ export default {
                 this.generateqr()
 
                 //根据订单号向后台循环查询交易是否成功
-                this.handleCheckBill(data.order_id)
+                this.CheckBill(data.order_id)
     
                     
             }).catch(err =>{
@@ -368,24 +364,17 @@ export default {
                 this.$throwError(err)
             })
 
-
         },
 
 
-        handleCheckBill (order_id) {
+        CheckBill (order_id) {
             //参考https://juejin.im/post/5afb873f51882542ac7d6998
             //超过10m内循环
             if ( this.timeout ){
                 return
             }
 
-            this.timeout = setTimeout(() => {
-
-                if ( this.timeout){
-                    window.clearInterval(this.timeout)
-                    this.timeout =null
-                }
-
+            this.timeout = setInterval( () =>{
                 this.axios.get( this.conf.server +'/printapi/getorder', {
                 // 向后端请求订单支付信息
                     params:{ order_id: order_id}
@@ -398,94 +387,38 @@ export default {
 
                         let data = res.data.data;
 
+                        console.log('data:' ,  data)
+
                         this.print_status_id = data.print_status_id;
 
-                        if (data.pay_status >0 ) { //数据库里的交易状态码，1为成功，0为失败
-                            payStatus = true //交易成功
+                        if ( data.pay_status >0) { //数据库里的交易状态码，1为成功，0为失败
+                            this.payStatus = true //交易成功
 
                             console.log( order_id, ': 支付成功')
 
-                            // window.alert('支付成功')
-                
+                        }else {
+                            this.payStatus = false //交易失败
+                            this.print_status_id =0;
                         }
+
+                    }else{
+                        this.payStatus = false //交易失败
+                        this.print_status_id =0;
+                        console.log(  res.data.msg)
                     }
-                    else{
-
-                        console.log( res.data.msg)
-                        this.handleCheckBill( order_id);
-
-                    }
-
-                }).catch(err=>{
-
-                    console.log( err)
-                    
-                    this.handleCheckBill( order_id)
                    
-                        
+                }).catch(err=>{
+                    console.log( err)            
                 })
 
-                this.retryCount++
-
-            }, 5*1000)
-
+            },  5*1000)
 
         },
 
-    
-        h5pay(){ 
-             //H5 付款
-            this.axios.get( this.conf.server  +'/printapi/order', { 
-                params:{
-                    total_fee:this.total_fee
-                } 
-            })
-            .then( (res) => {
-				let dataPost = {
-				    out_trade_no:res.data.out_trade_no, //后台生成的订单号
-                    total_fee:res.data.total_fee, //交易金额
-                }
-                
-				//请求到node 层unifiedOrder
-                return  this.axios.get(this.conf.server+'/pay/wxpay/unifiedOrder/',{ params: dataPost})
-                .then(res=>{
-                    //返回的支付地址拼接上redirect_url，支付完返回到原来的页面时，如果有需要查询支付结果，可利用query的checkBill字段去发起查询 
-                  
-                    let url = window.location.href;
-                    let index = url.indexOf('?')
-
-                    if ( index>0){
-                        url =url.substring(0, index)
-                    }
-      
-                    window.location.href=(res.data.next+'&redirect_url='+encodeURI(url+`?upload_type=${this.upload_type}pageindex=3&order_id=${res.data.order_id}`))
-                }).catch(err => {
-                    
-                    alert('支付失败！'+ err )
-                    
-                })
-                
-			})
-			
-        },
-        
 
     },
 
     mounted(){
-     
-        // this.axios.get( 'http://tms.topwisesz.com:8989/api/user/clientip'
-        // //this.axios.get(this.conf.server + '/pay/wxpay/unifiedOrder',
-
-        // ).then(res => {
-        //     let data = res.data
-        //     console.log('clientip:', data)
-                
-        // }).catch(err =>{
-        //     console.log(err)
-        //     this.$throwError(err)
-        // })
-
         console.log( this.$route.query)
 
         // if ( this.$route.query.devid ){
@@ -509,10 +442,25 @@ export default {
         }
 
         if ( this.pageindex>=3 && this.order_id  ){
-            this.handleCheckBill(this.order_id)
+            this.CheckBill(this.order_id)
         }
 
-    }
+    },
+
+    beforeDestroy () { 
+        //触发方式,在console里面打myVue.$destroy();
+        //在开始销毁实例时调用。此时实例仍然有功能。
+        console.log(" localupload 销毁前");
+
+        if ( this.timeout){
+            window.clearInterval(this.timeout)
+            //  clearTimeout( this.timeout)
+            this.timeout =null
+        }
+
+
+    },
+
 
 
 }

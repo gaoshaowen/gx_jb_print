@@ -19,9 +19,12 @@
     <div id="container flexbox">
 
         <div class="flexitem">
-            <router-link :to="'/localupload?devid=' + device_id"  >
+            <a href="#" @click.prevent="localupload">
+                 <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
+            </a>
+            <!-- <router-link :to="'/localupload?devid=' + device_id"  >
                 <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
-            </router-link>
+            </router-link> -->
         </div>
 
         <div class="flexitem">
@@ -51,6 +54,7 @@
 
 import QRCode from 'qrcodejs2'
 import conf from '../config_cli'
+import { setInterval } from 'timers';
 
 export default {
     data(){
@@ -110,6 +114,15 @@ export default {
     },
 
     methods:{
+        localupload(){
+            if (  this.timeout)
+            {
+                window.clearTimeout(this.timeout)
+                this.timeout =null 
+            }
+            this.$router.push('/localupload?devid=' + this.device_id)
+        },
+
        generateqr(device_id){
            
             let url = window.location.href;
@@ -140,9 +153,26 @@ export default {
  
         },
 
+
+        myrefresh(){
+            // 自升级
+
+            window.location.reload();
+        }
+
+      
     },
 
     mounted() {
+
+        this.timeout = setTimeout(this.myrefresh , 60000); //指定1fen刷新一次
+
+        setInterval( ()=>{
+            //可以写获取轮播图片,
+
+        } , 30000)  //每分钟获取一次
+
+
         // you can use current swiper instance object to do something(swiper methods)
         // 然后你就可以使用当前上下文内的swiper对象去做你想做的事了
         // console.log('this is current swiper instance object', this.swiper)
@@ -151,6 +181,7 @@ export default {
         this.swiper.el.onmouseover = function () {
             this.swiper.autoplay.stop();
         };
+
 
         //鼠标离开开始自动切换
         this.swiper.el.onmouseout = function () {
@@ -163,6 +194,8 @@ export default {
         }
         console.log('home device_id: ', this.device_id )
         localStorage.setItem("device_id", this.device_id);
+
+        localStorage.setItem("home", window.location.href); 
 
         //得到设备ID
         this.generateqr(this.device_id)
