@@ -11,6 +11,8 @@ import conf from './config_cli'
 
 Vue.prototype.conf =conf
 
+
+
 Vue.use(VueAxios, axios)
 
 axios.interceptors.request.use(

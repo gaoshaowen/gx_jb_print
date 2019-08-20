@@ -55,6 +55,7 @@
 import QRCode from 'qrcodejs2'
 import conf from '../config_cli'
 import { setInterval } from 'timers';
+import uuid from '../utils/uuid'
 
 export default {
     data(){
@@ -179,7 +180,10 @@ export default {
         
         if ( this.$route.query.devid ){
             this.device_id =this.$route.query.devid
+        }else{
+            this.device_id = uuid.uuidv1().replace(/-/g,'')
         }
+
         console.log('home device_id: ', this.device_id )
         localStorage.setItem("device_id", this.device_id);
 
@@ -195,7 +199,7 @@ export default {
 
         })
 
-
+    
         this.sockets.subscribe('openremoteupload', (data) => {
 
             if ( this.timeout)

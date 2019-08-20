@@ -28,12 +28,12 @@ export default {
 
   mounted() {
 
-    if ( this.$route.query.devid ){
-        this.device_id =this.$route.query.devid
-    }
-    console.log('app device_id: ', this.device_id )
-    localStorage.setItem("device_id", this.device_id);
+    // if ( this.$route.query.devid ){
+    //     this.device_id =this.$route.query.devid
+    // }
 
+    // console.log('app device_id: ', this.device_id )
+    // localStorage.setItem("device_id", this.device_id);
 
 
   },
