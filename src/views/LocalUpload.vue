@@ -48,8 +48,6 @@
                         height="650px"
                         frameborder="0">
                     </iframe>
-
-
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">       

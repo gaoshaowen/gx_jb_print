@@ -22,17 +22,14 @@
                  
                 </div>
                
+                <div class="progress-wrapper"   v-show="uping" >
+                    <div class="progress-progress" :style="uploadStyle"></div>
+                    <div class="progress-rate">{{(uploadRate*100).toFixed(2)}}%</div>
+                </div>
+
                 <div v-show="upload_file.filename"> 
                     {{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )
                     <span class="el-button-text" @click="upload_file.filename=''">删除</span>
-                    <!-- 
-                    <iframe
-                        :src="'//ow365.cn/?i=18679&ssl=1&furl='+upload_file.url"
-                        width="100%"
-                        height="100%"
-                        frameborder="0">
-                    </iframe> -->
-
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">
@@ -145,6 +142,8 @@
 import QRCode from 'qrcodejs2'
 //import { clearScreenDown } from 'readline';
 // import { clearTimeout } from 'timers';
+import conf from '../config_cli'
+
 
 export default {
     data(){
@@ -189,6 +188,15 @@ export default {
             device_id:'',
 
             openid:'hello ',
+
+            fileUploadAPI: conf.uploadhost+ 'uploadapi/doUpload',//"/api/uploadapi/doUpload",
+            fileDeleteAPI: conf.uploadhost+ 'uploadapi/delfile',//"/api/uploadapi/doUpload",
+
+            uping: false,
+            uploadStyle:{
+                            width: '0%'
+                        },
+            uploadRate:0,
 
         }
     

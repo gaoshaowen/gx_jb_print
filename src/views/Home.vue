@@ -20,7 +20,7 @@
 
         <div class="flexitem">
             <a href="#" @click.prevent="localupload">
-                 <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
+                 <img :src="conf.virtualpath +'static/img/usb.jpg'"  />
             </a>
             <!-- <router-link :to="'/localupload?devid=' + device_id"  >
                 <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
