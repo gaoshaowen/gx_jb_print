@@ -154,9 +154,9 @@ export default {
             upload_file:{  
                 type:'upload_file',
                 filename: "",
+                pdffilename:'',
                 ufile: null,
                 result: "",
-                uping: 0,
                 size: 0,
                 unit: "kb",
                 url:''
@@ -251,7 +251,7 @@ export default {
           //  this.$refs[ref].dispatchEvent(new MouseEvent("click"));
         },
 
-        getFile(upload_file , event, ref) {
+        async getFile(upload_file , event, ref) {
             var file = event.target.files[0];
 
             console.log(file);
@@ -260,7 +260,7 @@ export default {
 
             //限制文件大小为100M
             if( filesize >100 *1024*1024 ){
-                this.$alert( '上传文件不能超过 100M')
+                alert( '上传文件不能超过 100M')
                 return 
             }
 
@@ -270,7 +270,7 @@ export default {
             extname =extname.toLowerCase();
 
             // if (extname !='.webp' && extname !='.bmp' && extname !='.jpg' && extname !='.jpeg' && extname !='.png'  && extname !='.tif'  && extname !='.gif' && extname !='.ico' ){
-            //     this.$alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
+            //     alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
             //     return 
             // }
 
@@ -286,17 +286,76 @@ export default {
                 upload_file.unit = "KB";
             }
 
-            this.$refs[ref].value = "";
 
+            await this.uploadfile()
+  
         },
 
-        uploadfile(){  //确定要打印当前文件同步到平板上
+        async uploadfile(){  //确定要打印当前文件同步到平板上
             //1. 上传文件
-            //2. 把上传的文件URL 同步到平板电脑显示
-            
-          
-            //2. 同步 
-            this.tongbufile()
+
+            let vm = this;
+            this.uploadRate = 0;
+            this.uploadStyle.width = '0%';
+            this.uping =true
+
+            //上传文件
+            let config = {
+                headers: {
+                "Content-Type": "multipart/form-data"
+                },
+
+                onUploadProgress: function (e) {
+                    //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
+                    //如果lengthComputable为false，就获取不到e.total和e.loaded
+                    if (e.lengthComputable) {
+                        var rate = vm.uploadRate = e.loaded / e.total;  //已上传的比例
+                        if (rate < 1) {
+                            //这里的进度只能表明文件已经上传到后台，但是后台有没有处理完还不知道
+                            //因此不能直接显示为100%，不然用户会误以为已经上传完毕，关掉浏览器的话就可能导致上传失败
+                            //等响应回来时，再将进度设为100%
+                            vm.uploadRate = rate;
+                            vm.uploadStyle.width = (rate *100).toFixed(2)+ '%';
+                        }
+                    }
+                }
+
+            }
+
+     
+            let params =new FormData();
+            params.append("file", this.upload_file.ufile); 
+
+            try {
+           
+                let data =await  this.axios.post(this.fileUploadAPI,params,config);
+                data= data.data;
+                console.log('upload return: ', JSON.stringify( data))
+
+                if ( data.code !=0){
+                    alert(data.msg);
+                }
+
+                this.upload_file.url = data.url.file.path
+                this.upload_file.pdffilename = data.url.file.pdffilename
+
+  
+                //2. 把上传的文件URL 同步到平板电脑显示
+                this.tongbufile()
+
+                console.log( 'upload_file: ' , JSON.stringify( this.upload_file) )
+            }
+            catch(err){
+                this.upload_file.result =err
+                console.log('err:', err)
+            }
+
+
+            this.uploadRate = 0;
+            this.uploadStyle.width = '0%';
+            this.uping =false;
+
+            this.$refs[ref].value = "";
 
         },
 
@@ -313,6 +372,7 @@ export default {
                 devid: this.device_id,
                 upload_file:{  
                     filename:  this.upload_file.filename,
+                    pdffilename: this.upload_file.pdffilename,
                     size:  this.upload_file.size,
                     unit:  this.upload_file.unit,
                     url: this.upload_file.url

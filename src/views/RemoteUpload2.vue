@@ -1,16 +1,29 @@
 <template>
     <div class="layout" >
 
-        <div class="header">
+        <!-- <div class="header">
             <h2> 共享打印 </h2> 
-        </div>
+        </div> -->
 
         <div class="main">
+             <div class="page1"  v-show="pageindex==1">
 
-            <div class="page1"  v-show="pageindex==1">
-   
-                <h2> 手机端正在上传文件......</h2>
-       
+                <div>
+                    <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
+                </div>
+               
+                <h2 v-show="upload_file.filename.length ==0" > 手机端正在上传文件......</h2>
+
+                <div v-show="upload_file.filename"> 
+                    {{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )
+                    <span class="el-button-text" @click="upload_file.filename=''">删除</span>
+                    <div id="box"> </div>     
+                </div>
+
+                <div class="footer" v-show="upload_file.filename">       
+                    <button class="el-button el-button-primary"   @click="pageindex++"> 提交订单 </button>
+                </div>
+                
             </div>
             
             <div class="page2" v-show="pageindex==2">
@@ -30,7 +43,9 @@
                             色彩
                         </div>
                         <div class="main_col">
-                            {{ print_args.color }} 
+                            <input type="radio" name="color" value="black" v-model="print_args.color"> 黑白
+                            <input type="radio" name="color" value="color" v-model="print_args.color"> 彩色
+                        
                         </div>
                     </div> 
 
@@ -39,7 +54,9 @@
                             单双面
                         </div>
                         <div class="main_col">
-                            {{ print_args.side }} 
+                            <input type="radio" name="side" value="one-side" v-model="print_args.side"> 单面
+                            <input type="radio" name="side" value="two-side" v-model="print_args.side"> 双面
+                      
                         </div>
                     </div> 
 
@@ -48,7 +65,10 @@
                             纸张大小
                         </div>
                         <div class="main_col">
-                            {{ print_args.pagesize }} 
+                            <input type="radio" name="pagesize" value="A4" v-model="print_args.pagesize"> A4
+                            <input type="radio" name="pagesize" value="A5" v-model="print_args.pagesize"> A5
+                            <input type="radio" name="pagesize" value="A3" v-model="print_args.pagesize"> A3
+                        
                         </div>
                     </div> 
 
@@ -57,7 +77,7 @@
                             份数
                         </div>
                         <div class="main_col">
-                            {{ print_args.qty }} 
+                            <input type="text" name="qty"  v-model="print_args.qty"> 
                         </div>
                     </div> 
 
@@ -70,7 +90,6 @@
                                <input type="radio"   v-model="pay_type"  :value="item.id"  :key="ind"/> {{ item.text }} 
                            </template>
 
-                            {{pay_type}}
                         </div>
                     </div> 
                     
@@ -78,10 +97,12 @@
 
                 <div class="footer">
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
+                    <button class="el-button el-button-primary"   @click="pageindex--"> 上一步 </button>
                     <button class="el-button el-button-primary"   @click="nativepay"> 立即支付 </button>
                 </div>
             
             </div>
+
 
             <div class ="page3" v-show="pageindex==3">
             
@@ -94,11 +115,10 @@
                 </div>
 
                 <div class="footer">
-                    <button class="el-button el-button-primary"   @click="refleshcode_rule" > 刷新支付码 </button>
+                    <button class="el-button el-button-primary"  @click="refleshcode_rule" > 刷新支付码 </button>
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <!-- <button class="el-button el-button-primary"  @click="shensu" > 打印失败申诉 </button> -->
                 </div>
-
                 
             </div>
 
@@ -126,6 +146,7 @@ export default {
 
             upload_file:{  
                 filename: "",
+                pdffilename:'',
                 size: 0,
                 unit: "kb",
                 url:''
@@ -149,7 +170,7 @@ export default {
 
             payStatus:false,
             retryCount:0,
-            print_status_id:1,
+            print_status_id:0,
 
             order_id:'',
             timeout:null,
@@ -174,9 +195,12 @@ export default {
         },
 
         payStatus:function(newval, oldval) {
+
             if ( newval ){
                 if ( this.print_status_id <1 )
-                    this.print_status_id = 1
+                    this.print_status_id = 1;
+            }else {
+                 this.print_status_id =0;
             }
         },
 
@@ -243,6 +267,7 @@ export default {
                     dev_id: this.device_id,
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
+                    filename: this.upload_file.filename,
                     print_args: JSON.stringify(this.print_args)
                 }
             }).then(res => {
@@ -298,7 +323,8 @@ export default {
                 return
             }
 
-            this.timeout = setInterval( () =>{
+           
+            this.timeout = window.setInterval( () =>{
                 this.axios.get( this.conf.server +'/printapi/getorder', {
                 // 向后端请求订单支付信息
                     params:{ order_id: order_id}
@@ -376,7 +402,14 @@ export default {
             console.log('tongbufile:', data)
 
             this.upload_file = data.upload_file
-            this.pageindex =2
+
+            var box = document.getElementById('box') 
+            //var str = '<embed src="'+this.upload_file.url+'" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>'; 
+            var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
+            box.innerHTML = str;   
+            
+
+            this.pageindex =1
 
         })
 
@@ -395,7 +428,6 @@ export default {
         }
 
     },
-
 
 
 }
@@ -472,7 +504,8 @@ export default {
     flex-wrap: row wrap ;
     justify-content:flex-start;
     align-items:flex-start;
-    margin:10px,10px;
+    margin:20px,10px;
+    padding-top:30px;
 }
 
 .title_col{

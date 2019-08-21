@@ -1,9 +1,9 @@
 <template>
     <div class="layout" >
 
-        <div class="header">
+        <!-- <div class="header">
             <h2> 共享打印 </h2> 
-        </div>
+        </div> -->
 
         <div class="main">
 
@@ -23,21 +23,22 @@
                     <button class="el-button el-button-primary"   @click="selectfile('print_file')"> 选择要打印的文件</button>
                 </div>
                
+
+                <div class="progress-wrapper"   v-show="uping" >
+                    <div class="progress-progress" :style="uploadStyle"></div>
+                    <div class="progress-rate">{{(uploadRate*100).toFixed(2)}}%</div>
+                </div>
+
                 <div v-show="upload_file.filename"> 
                     {{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )
                     <span class="el-button-text" @click="upload_file.filename=''">删除</span>
-                    <!-- 
-                    <iframe
-                        :src="'//ow365.cn/?i=18679&ssl=1&furl='+upload_file.url"
-                        width="100%"
-                        height="100%"
-                        frameborder="0">
-                    </iframe> -->
-
+                    <div id="box"> </div>     
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">       
                     <button class="el-button el-button-primary"   @click="pageindex++"> 提交订单 </button>
+
+                    <!-- <button class="el-button el-button-primary"   @click="uploadfile"> 上传文件 </button> -->
                 </div>
                 
             </div>
@@ -59,7 +60,9 @@
                             色彩
                         </div>
                         <div class="main_col">
-                            {{ print_args.color }} 
+                            <input type="radio" name="color" value="black" v-model="print_args.color"> 黑白
+                            <input type="radio" name="color" value="color" v-model="print_args.color"> 彩色
+                        
                         </div>
                     </div> 
 
@@ -68,7 +71,9 @@
                             单双面
                         </div>
                         <div class="main_col">
-                            {{ print_args.side }} 
+                            <input type="radio" name="side" value="one-side" v-model="print_args.side"> 单面
+                            <input type="radio" name="side" value="two-side" v-model="print_args.side"> 双面
+                      
                         </div>
                     </div> 
 
@@ -77,7 +82,10 @@
                             纸张大小
                         </div>
                         <div class="main_col">
-                            {{ print_args.pagesize }} 
+                            <input type="radio" name="pagesize" value="A4" v-model="print_args.pagesize"> A4
+                            <input type="radio" name="pagesize" value="A5" v-model="print_args.pagesize"> A5
+                            <input type="radio" name="pagesize" value="A3" v-model="print_args.pagesize"> A3
+                        
                         </div>
                     </div> 
 
@@ -86,7 +94,7 @@
                             份数
                         </div>
                         <div class="main_col">
-                            {{ print_args.qty }} 
+                            <input type="text" name="qty"  v-model="print_args.qty"> 
                         </div>
                     </div> 
 
@@ -113,7 +121,7 @@
             </div>
 
             <div class ="page3" v-show="pageindex==3">
-                <div v-show="upload_type == 'local'" >
+                <div  >
                     <div id="qrcode"  ref="qrcode" style="display:inline-block;"></div>
                 </div>
                 
@@ -122,7 +130,7 @@
                 </div>
 
                 <div class="footer">
-                    <button class="el-button el-button-primary"  v-show="upload_type == 'local'" @click="refleshcode_rule" > 刷新支付码 </button>
+                    <button class="el-button el-button-primary"  @click="refleshcode_rule" > 刷新支付码 </button>
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
                     <!-- <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button> -->
                 </div>
@@ -145,6 +153,8 @@ import QRCode from 'qrcodejs2'
 import { setInterval } from 'timers';
 import { stringify } from 'querystring';
 // import { clearTimeout } from 'timers';
+import conf from '../config_cli'
+
 
 export default {
     data(){
@@ -152,11 +162,11 @@ export default {
             pageindex:1,
 
             upload_file:{  
-                type:'upload_file',
                 filename: "",
+                pdffilename:'',
                 ufile: null,
                 result: "",
-                uping: 0,
+      
                 size: 0,
                 unit: "kb",
                 url:''
@@ -185,7 +195,17 @@ export default {
             order_id:'',
             timeout:null,
 
-            device_id:'',
+            device_id:'' ,
+
+            fileUploadAPI: conf.uploadhost+ 'uploadapi/doUpload',//"/api/uploadapi/doUpload",
+            fileDeleteAPI: conf.uploadhost+ 'uploadapi/delfile',//"/api/uploadapi/doUpload",
+
+            uping: false,
+            uploadStyle:{
+                            width: '0%'
+                        },
+            uploadRate:0,
+
 
         }
     
@@ -254,7 +274,7 @@ export default {
             document.getElementById(ref).click()
         },
 
-        getFile(upload_file , event, ref) {
+        async getFile(upload_file , event, ref) {
             var file = event.target.files[0];
 
             console.log(file);
@@ -263,7 +283,7 @@ export default {
 
             //限制文件大小为100M
             if( filesize >100 *1024*1024 ){
-                this.$alert( '上传文件不能超过 100M')
+                alert( '上传文件不能超过 100M')
                 return 
             }
 
@@ -273,14 +293,14 @@ export default {
             extname =extname.toLowerCase();
 
             // if (extname !='.webp' && extname !='.bmp' && extname !='.jpg' && extname !='.jpeg' && extname !='.png'  && extname !='.tif'  && extname !='.gif' && extname !='.ico' ){
-            //     this.$alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
+            //     alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
             //     return 
             // }
 
-        
+
             upload_file.ufile = file;
             upload_file.filename = file.name;
-
+            
             upload_file.size = ((filesize* 1.0) / 1024).toFixed(3);
             if (upload_file.size >= 1024) {
                 upload_file.size = (upload_file.size / 1024).toFixed(3);
@@ -288,10 +308,80 @@ export default {
             } else {
                 upload_file.unit = "KB";
             }
+            
+            await  this.uploadfile();
+            
+        },
+
+        
+        async uploadfile(){
+
+            let vm = this;
+            this.uploadRate = 0;
+            this.uploadStyle.width = '0%';
+            this.uping =true
+
+            //上传文件
+            let config = {
+                headers: {
+                "Content-Type": "multipart/form-data"
+                },
+
+                onUploadProgress: function (e) {
+                    //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
+                    //如果lengthComputable为false，就获取不到e.total和e.loaded
+                    if (e.lengthComputable) {
+                        var rate = vm.uploadRate = e.loaded / e.total;  //已上传的比例
+                        if (rate < 1) {
+                            //这里的进度只能表明文件已经上传到后台，但是后台有没有处理完还不知道
+                            //因此不能直接显示为100%，不然用户会误以为已经上传完毕，关掉浏览器的话就可能导致上传失败
+                            //等响应回来时，再将进度设为100%
+                            vm.uploadRate = rate;
+                            vm.uploadStyle.width = (rate *100).toFixed(2)+ '%';
+                        }
+                    }
+                }
+
+            }
+
+     
+            let params =new FormData();
+            params.append("file", this.upload_file.ufile); 
+
+            try {
+           
+                let data =await  this.axios.post(this.fileUploadAPI,params,config);
+                data= data.data;
+                console.log('upload return: ', JSON.stringify( data))
+
+                if ( data.code !=0){
+                    alert(data.msg);
+                }
+
+                this.upload_file.url = data.url.file.path
+                this.upload_file.pdffilename = data.url.file.pdffilename
+
+                var box = document.getElementById('box') 
+                //var str = '<embed src="'+this.upload_file.url+'" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>'; 
+                var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
+                box.innerHTML = str;   
+
+                console.log( 'upload_file: ' , JSON.stringify( this.upload_file) )
+            }
+            catch(err){
+                this.upload_file.result =err
+                console.log('err:', err)
+            }
+
+
+            this.uploadRate = 0;
+            this.uploadStyle.width = '0%';
+            this.uping =false;
 
             this.$refs[ref].value = "";
 
         },
+
 
         generateqr(){
 
@@ -312,13 +402,14 @@ export default {
         },
 
         nativepay(){  //二维码生成
-
+          
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
                     total_fee:this.total_fee,
                     dev_id: this.device_id,
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
+                    filename: this.upload_file.filename,
                     print_args: JSON.stringify(this.print_args)
                 }
             }).then(res => {
@@ -537,7 +628,8 @@ export default {
     flex-wrap: row wrap ;
     justify-content:flex-start;
     align-items:flex-start;
-    margin:10px,10px;
+    margin:20px,10px;
+    padding-top:30px;
 }
 
 .title_col{
@@ -555,5 +647,10 @@ export default {
     width:500px;
     height: 500px;
 }
+
+.progress-wrapper { position: relative; height: 50px; border-radius: 5px; background-color: lightgrey; }
+.progress-wrapper .progress-progress { position: absolute; left: 0; top: 0; height: 100%; width: 0%; border-radius: 5px; background-color: darkturquoise; z-index: 1; }
+.progress-wrapper .progress-rate { position: relative; text-align: center; font-size: 14px; line-height: 50px; height: 100%; z-index:2;}
+
 
 </style>
