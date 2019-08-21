@@ -251,8 +251,38 @@ export default {
           //  this.$refs[ref].dispatchEvent(new MouseEvent("click"));
         },
 
+        is_valid_file_type($file_type){
+            if (($file_type == "image/gif")
+                    || ($file_type == "image/jpeg")
+                || ($file_type == "image/jpg")
+                || ($file_type == "image/png")
+                || ($file_type == "image/doc")
+                || ($file_type == "application/pdf")
+                || ($file_type == "application/wps-office.pptx")
+                || ($file_type == "application/wps-office.xlsx")
+                || ($file_type == "application/wps-office.docx")
+                || ($file_type == "application/wps-office.ppt")
+                || ($file_type == "application/vnd.ms-excel")
+                || ($file_type == "application/wps-office.doc")
+                || ($file_type == "application/msword")
+                || ($file_type == "application/vnd.ms-powerpoint")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")){
+                return  true ;
+            }else{
+                return  false;
+            }
+        },
+
+
         async getFile(upload_file , event, ref) {
             var file = event.target.files[0];
+
+            if ( ! this.is_valid_file_type( file.type )){
+                alert('不支持的文件')
+                return;
+            }
 
             console.log(file);
             
