@@ -17,7 +17,14 @@
                 <div v-show="upload_file.filename"> 
                     {{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )
                     <span class="el-button-text" @click="upload_file.filename=''">删除</span>
-                    <div id="box"> </div>     
+                    <!-- <div id="box"> </div>      -->
+                    <iframe
+                        :src="upload_file.url"
+                        width="100%"
+                        height="650px"
+                        frameborder="0">
+                    </iframe>
+
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">       
@@ -54,13 +61,14 @@
                             单双面
                         </div>
                         <div class="main_col">
-                            <input type="radio" name="side" value="one-side" v-model="print_args.side"> 单面
-                            <input type="radio" name="side" value="two-side" v-model="print_args.side"> 双面
-                      
+                            <input type="radio" name="side" value="one" v-model="print_args.side"> 单面
+                            <input type="radio" name="side" value="two-sided-long-edge" v-model="print_args.side"> 双面长边
+                            <input type="radio" name="side" value="two-sided-short-edgee" v-model="print_args.side"> 双面短边
+                    
                         </div>
                     </div> 
 
-                    <div class="row" >
+                    <!-- <div class="row" >
                         <div class="title_col">
                             纸张大小
                         </div>
@@ -70,7 +78,7 @@
                             <input type="radio" name="pagesize" value="A3" v-model="print_args.pagesize"> A3
                         
                         </div>
-                    </div> 
+                    </div>  -->
 
                     <div class="row" >
                         <div class="title_col">
@@ -102,7 +110,6 @@
                 </div>
             
             </div>
-
 
             <div class ="page3" v-show="pageindex==3">
             
@@ -154,7 +161,7 @@ export default {
 
             print_args:{
                 color:'black',
-                side:'one-side',
+                side:'one',
                 pagesize:'A4',
                 qty: 1
             },
@@ -260,7 +267,12 @@ export default {
         },
 
         nativepay(){  //二维码生成
-
+          
+            let  print_args = { 
+                color_mode: this.print_args.color,
+                sides: this.print_args.side,
+                copys:  this.print_args.qty 
+            }
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
                     total_fee:this.total_fee,
@@ -268,7 +280,8 @@ export default {
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
                     filename: this.upload_file.filename,
-                    print_args: JSON.stringify(this.print_args)
+                    qty: this.upload_file.qty,
+                    print_args: JSON.stringify(print_args)
                 }
             }).then(res => {
 
@@ -403,12 +416,10 @@ export default {
 
             this.upload_file = data.upload_file
 
-            var box = document.getElementById('box') 
-            //var str = '<embed src="'+this.upload_file.url+'" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>'; 
-            var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
-            box.innerHTML = str;   
+            // var box = document.getElementById('box') 
+            // var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
+            // box.innerHTML = str;   
             
-
             this.pageindex =1
 
         })

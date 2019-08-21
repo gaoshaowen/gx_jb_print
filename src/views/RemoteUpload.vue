@@ -287,11 +287,11 @@ export default {
             }
 
 
-            await this.uploadfile()
+            await this.uploadfile(ref)
   
         },
 
-        async uploadfile(){  //确定要打印当前文件同步到平板上
+        async uploadfile(ref){  //确定要打印当前文件同步到平板上
             //1. 上传文件
 
             let vm = this;

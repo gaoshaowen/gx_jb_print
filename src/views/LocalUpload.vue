@@ -8,15 +8,23 @@
         <div class="main">
 
             <div class="page1"  v-show="pageindex==1">
-                <input
+                <!-- <input
                     type="file"
                     @change="getFile( upload_file ,$event, 'print_file')"
                     ref="print_file"
                     id="print_file"
                     style="display:none;"
                     accept=".xls,.pdf,.doc,.xlsx,.docx"
+                /> -->
+
+                <input
+                    type="file"
+                    @change="getFile( upload_file ,$event, 'print_file')"
+                    ref="print_file"
+                    id="print_file"
+                    style="display:none;"
                 />
-                
+
                 <div>
                     <button class="el-button el-button-primary" @click="backhome"  > 返回首页 </button>
 
@@ -32,7 +40,16 @@
                 <div v-show="upload_file.filename"> 
                     {{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )
                     <span class="el-button-text" @click="upload_file.filename=''">删除</span>
-                    <div id="box"> </div>     
+                    <!-- <div id="box"> </div>   -->
+
+                    <iframe
+                        :src="upload_file.url"
+                        width="100%"
+                        height="650px"
+                        frameborder="0">
+                    </iframe>
+
+
                 </div>
 
                 <div class="footer" v-show="upload_file.filename">       
@@ -71,13 +88,14 @@
                             单双面
                         </div>
                         <div class="main_col">
-                            <input type="radio" name="side" value="one-side" v-model="print_args.side"> 单面
-                            <input type="radio" name="side" value="two-side" v-model="print_args.side"> 双面
-                      
+                            <input type="radio" name="side" value="one" v-model="print_args.side"> 单面
+                            <input type="radio" name="side" value="two-sided-long-edge" v-model="print_args.side"> 双面长边
+                            <input type="radio" name="side" value="two-sided-short-edgee" v-model="print_args.side"> 双面短边
+                    
                         </div>
                     </div> 
 
-                    <div class="row" >
+                    <!-- <div class="row" >
                         <div class="title_col">
                             纸张大小
                         </div>
@@ -87,7 +105,7 @@
                             <input type="radio" name="pagesize" value="A3" v-model="print_args.pagesize"> A3
                         
                         </div>
-                    </div> 
+                    </div>  -->
 
                     <div class="row" >
                         <div class="title_col">
@@ -174,7 +192,7 @@ export default {
 
             print_args:{
                 color:'black',
-                side:'one-side',
+                side:'one',
                 pagesize:'A4',
                 qty: 1
             },
@@ -274,8 +292,39 @@ export default {
             document.getElementById(ref).click()
         },
 
+
+        is_valid_file_type($file_type){
+            if (($file_type == "image/gif")
+                    || ($file_type == "image/jpeg")
+                || ($file_type == "image/jpg")
+                || ($file_type == "image/png")
+                || ($file_type == "image/doc")
+                || ($file_type == "application/pdf")
+                || ($file_type == "application/wps-office.pptx")
+                || ($file_type == "application/wps-office.xlsx")
+                || ($file_type == "application/wps-office.docx")
+                || ($file_type == "application/wps-office.ppt")
+                || ($file_type == "application/vnd.ms-excel")
+                || ($file_type == "application/wps-office.doc")
+                || ($file_type == "application/msword")
+                || ($file_type == "application/vnd.ms-powerpoint")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation")
+                || ($file_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")){
+                return  true ;
+            }else{
+                return  false;
+            }
+        },
+
+
         async getFile(upload_file , event, ref) {
             var file = event.target.files[0];
+
+            if ( ! this.is_valid_file_type( file.type )){
+                alert('不支持的文件')
+                return;
+            }
 
             console.log(file);
             
@@ -292,6 +341,7 @@ export default {
             let extname =  event.target.files[0].name.substring(lastindex)
             extname =extname.toLowerCase();
 
+            
             // if (extname !='.webp' && extname !='.bmp' && extname !='.jpg' && extname !='.jpeg' && extname !='.png'  && extname !='.tif'  && extname !='.gif' && extname !='.ico' ){
             //     alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
             //     return 
@@ -309,12 +359,12 @@ export default {
                 upload_file.unit = "KB";
             }
             
-            await  this.uploadfile();
+            await  this.uploadfile(ref);
             
         },
 
         
-        async uploadfile(){
+        async uploadfile(ref){
 
             let vm = this;
             this.uploadRate = 0;
@@ -361,10 +411,9 @@ export default {
                 this.upload_file.url = data.url.file.path
                 this.upload_file.pdffilename = data.url.file.pdffilename
 
-                var box = document.getElementById('box') 
-                //var str = '<embed src="'+this.upload_file.url+'" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>'; 
-                var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
-                box.innerHTML = str;   
+                // var box = document.getElementById('box') 
+                // var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
+                // box.innerHTML = str;   
 
                 console.log( 'upload_file: ' , JSON.stringify( this.upload_file) )
             }
@@ -403,6 +452,12 @@ export default {
 
         nativepay(){  //二维码生成
           
+            let  print_args = { 
+                color_mode: this.print_args.color,
+                sides: this.print_args.side,
+                copys:  this.print_args.qty 
+            }
+
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
                     total_fee:this.total_fee,
@@ -410,7 +465,8 @@ export default {
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
                     filename: this.upload_file.filename,
-                    print_args: JSON.stringify(this.print_args)
+                    qty: this.upload_file.qty,
+                    print_args: JSON.stringify(print_args)
                 }
             }).then(res => {
 

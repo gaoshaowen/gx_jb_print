@@ -3,6 +3,7 @@ module.exports ={
     server: 'http://www.cnyyt.cn/wxback',
 
     uploadhost:'http://www.gjyyt.com:8080/',
+    //uploadhost:'http://localhost:8080/',
 
     tongbuserver:'http://www.cnyyt.cn:3000/',
 
