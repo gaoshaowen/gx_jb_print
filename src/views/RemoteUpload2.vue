@@ -268,11 +268,13 @@ export default {
 
         nativepay(){  //二维码生成
           
-            let  print_args = { 
-                color_mode: this.print_args.color,
-                sides: this.print_args.side,
-                copys:  this.print_args.qty 
-            }
+            // let  print_args = { 
+            //     color_mode: this.print_args.color,
+            //     sides: this.print_args.side,
+            //     copys:  this.print_args.qty 
+            // }
+            let print_args=`color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`
+
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
                     total_fee:this.total_fee,
