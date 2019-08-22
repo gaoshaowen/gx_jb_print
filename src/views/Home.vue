@@ -1,14 +1,14 @@
 <template>
     
-<div class="layout">
-    <div id="header">
+<div class="layout"> 
+    <div class="header">
         <div class="partnerSwiper">
           <swiper :options="swiperOption" ref="mySwiper">
-            <!-- slides -->
+           
             <swiper-slide v-for="(item,index) in swipers" :key="index">
                 <img :src="item.img"  class="swiperimg"/>
             </swiper-slide>
-            <!-- Optional controls -->
+           
             <div class="swiper-pagination"  slot="pagination"></div>
             <div class="swiper-button-prev" slot="button-prev"></div>
             <div class="swiper-button-next" slot="button-next"></div>
@@ -16,37 +16,33 @@
           </swiper>
         </div>
     </div>
-    <div id="container flexbox">
+    <div class="main flexbox">
 
         <div class="flexitem">
             <a href="#" @click.prevent="localupload">
-                 <img :src="conf.virtualpath +'static/img/usb.jpg'"  />
+                 <img :src="conf.virtualpath +'static/img/usb.jpg'"  class="usbimg" />
             </a>
-            <!-- <router-link :to="'/localupload?devid=' + device_id"  >
-                <img :src="conf.virtualpath +'static/lunbo/1.jpg'"  />
-            </router-link> -->
+            <h2>
+                U盘上传
+            </h2>
         </div>
 
         <div class="flexitem">
             <div>
                 <div id="qrcode"  style="display:inline-block;"></div>
             </div>
-            <div>
-                扫码上传文件
-            </div>
+            <h2>
+                手机上传
+            </h2>
         </div>
         
     </div>
 
-    <div id="footer"></div>
+    <div class="footer">
+        <img :src="conf.virtualpath +'static/img/shangbiao.jpg'"  />
+    </div>
 
-  
-
-</div>
-
-
-    
-    
+</div> 
 
 </template>
 
@@ -99,7 +95,8 @@ export default {
 
             swipers:[
                 {url:'static/lunbo',img: conf.virtualpath +'static/lunbo/1.jpg'},
-                {url:'static/lunbo',img:conf.virtualpath +'static/lunbo/2.jpg'}
+                {url:'static/lunbo',img:conf.virtualpath +'static/lunbo/2.jpg'},
+                {url:'static/lunbo',img:conf.virtualpath +'static/lunbo/3.jpg'}
             ],
 
             device_id:'3b6e9e3694a243214afcbebc18121310',
@@ -138,8 +135,8 @@ export default {
             console.log( 'qr_code:', qr_code)    
         
             let qrcode = new QRCode('qrcode', { // qrcode  html为标签id
-                width: 250, // 长度
-                height: 250, // 宽度
+                width: 200, // 长度
+                height: 200, // 宽度
                 text: qr_code, // 内容
             // render: 'canvas' // 设置渲染方式（有两种方式 table和canvas，默认是canvas)
             // background: '#f0f'
@@ -225,10 +222,64 @@ export default {
 </script>
 
 <style  scoped>
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+	html,body{
+		height: 100%;
+        text-align:center
+	}
+
+    .layout{
+        /* width: 1400px; */
+        margin: 0 auto;
+        position: absolute; 
+        top:0px;
+        left:0px;
+        right:0px;
+        bottom:0px;
+        
+       
+    }
+
+    .header{
+        margin: 0 auto;
+        /* background-color: red; */
+        top:0px;
+        height:50%;
+        min-height: 300px;
+        width:100%; 
+        overflow: hidden;
+        background-color: white; 
+    }
+
+    .main{
+        margin: 40px auto;
+        /* position: absolute; */
+        height: 30%;
+        width: 100%; 
+        width:100%; 
+        min-height: 250px;
+        bottom: 41px;
+        background-color: white; 
+        margin-bottom: 0px;
+    }
+    .footer{
+
+        position: absolute;
+        width: 100%;
+        min-height: 36px;
+        bottom: 0px;
+        /* background-color: blue; */
+        overflow: hidden;
+        z-index: -1;
+    }
+
     .flexbox{
-        max-width:960px;
-        margin: 0,0; 
-        padding:0,0;
+ 
         display:-webkit-flex;
         display:flex;
         flex-wrap: row wrap ;
@@ -239,26 +290,27 @@ export default {
     .flexitem{
         box-sizing: border-box;
         display: inline-block;
-        margin:10px ,100px;
-        padding: 0,0;
+  
+       
         width: 360px;
-        height:240px;
+        height:250px;
         overflow: hidden;
        
     }
 
     .swiperimg{
-        width: 400px;
-        height:300px,
+        max-height: 300px;
+    } 
+
+    .usbimg{
+        width: 200px;
+        height: 200px;
     }
 
-    .layout{
-        /*width: 960px;*/
-        max-width: 960px;
-        margin: 0 auto;
+    h2{
+        margin-top:3px;
+        color:dimgray;
     }
 
-
- 
 
 </style>

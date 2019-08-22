@@ -311,8 +311,7 @@ export default {
             //     alert( event.target.files[0].name  + this.$t('Application.notfiletype') +  '  (ico,bmp,png,gif,tif,jpg,jpeg,webp)')
             //     return 
             // }
-
-        
+            
             upload_file.ufile = file;
             upload_file.filename = file.name;
 
