@@ -283,7 +283,7 @@ export default {
                     file_url: this.upload_file.url,
                     filename: this.upload_file.filename,
                     qty: this.upload_file.qty,
-                    print_args: JSON.stringify(print_args)
+                    print_args: print_args
                 }
             }).then(res => {
 

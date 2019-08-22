@@ -458,7 +458,7 @@ export default {
 
             let print_args=`color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`
       
-
+            console.log('print copys:', this.print_args.qty)
             this.axios.get( this.conf.server +'/printapi/order', {
                 params:{
                     total_fee:this.total_fee,
@@ -466,8 +466,8 @@ export default {
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
                     filename: this.upload_file.filename,
-                    qty: this.upload_file.qty,
-                    print_args: JSON.stringify(print_args)
+                    qty: this.print_args.qty,
+                    print_args: print_args
                 }
             }).then(res => {
 
