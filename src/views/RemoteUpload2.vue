@@ -267,12 +267,7 @@ export default {
         },
 
         nativepay(){  //二维码生成
-          
-            // let  print_args = { 
-            //     color_mode: this.print_args.color,
-            //     sides: this.print_args.side,
-            //     copys:  this.print_args.qty 
-            // }
+    
             let print_args=`color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`
 
             this.axios.get( this.conf.server +'/printapi/order', {
@@ -282,7 +277,7 @@ export default {
                     pay_type: this.pay_type,
                     file_url: this.upload_file.url,
                     filename: this.upload_file.filename,
-                    qty: this.upload_file.qty,
+                    qty: this.print_args.qty,
                     print_args: print_args
                 }
             }).then(res => {
@@ -392,14 +387,12 @@ export default {
         if ( this.$route.query.devid ){
             this.device_id =this.$route.query.devid
         }
-
+     
         console.log('device_id: ', this.device_id )
 
         if ( this.$route.query.order_id ){
              this.order_id =this.$route.query.order_id
         }
-
-     
 
         if (this.$route.query.pageindex) {
             this.pageindex =this.$route.query.pageindex          
@@ -416,12 +409,7 @@ export default {
         this.sockets.subscribe('tongbufile', (data ) => {
             console.log('tongbufile:', data)
 
-            this.upload_file = data.upload_file
-
-            // var box = document.getElementById('box') 
-            // var str = `<embed src="${ this.upload_file.url}" type="application/pdf" width="100%" height="700px" ref="emb"  id="emb"/>`; 
-            // box.innerHTML = str;   
-            
+            this.upload_file = data.upload_file 
             this.pageindex =1
 
         })

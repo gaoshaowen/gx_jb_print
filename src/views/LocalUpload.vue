@@ -449,13 +449,7 @@ export default {
         },
 
         nativepay(){  //二维码生成
-          
-            // let  print_args = { 
-            //     color_mode: this.print_args.color,
-            //     sides: this.print_args.side,
-            //     copys:  this.print_args.qty 
-            // }
-
+        
             let print_args=`color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`
       
             console.log('print copys:', this.print_args.qty)
@@ -569,11 +563,13 @@ export default {
     mounted(){
         console.log( this.$route.query)
 
-        // if ( this.$route.query.devid ){
-        //     this.device_id =this.$route.query.devid
-        // }
-        this.device_id =localStorage.getItem("device_id");
-
+        if ( this.$route.query.devid ){
+            this.device_id =this.$route.query.devid
+        }
+        else{
+            this.device_id =localStorage.getItem("device_id");
+        }
+      
 
         console.log('device_id: ', this.device_id )
 
