@@ -212,6 +212,9 @@ export default {
           this.timeout = null;
         }
       }
+      if (newval === 2) {
+        this.showTotalPages(this.upload_file.url);
+      }
     },
 
     payStatus: function(newval, oldval) {
@@ -243,6 +246,17 @@ export default {
   },
 
   methods: {
+    // ======直接通过pdf文件的url拿到总页数======
+    showTotalPages(url) {
+      // 是pdf格式的才调用此方法
+      if (url.slice(-3) === "pdf") {
+        PDFJS.getDocument(url).then(pdf => {
+          this.totalpages = pdf.numPages;
+          // console.log(this.totalpages);
+        });
+      }
+    },
+
     //   添加打印份数选择的函数
     downNumber() {
       if (this.print_args.qty > 1) {
@@ -306,11 +320,7 @@ export default {
 
           this.order_id = res.data.out_trade_no;
           this.total_fee = res.data.total_fee;
-          // ======直接通过pdf文件的url拿到总页数======
-          PDFJS.getDocument(this.upload_file.url).then(pdf => {
-            this.totalpages = pdf.numPages;
-          });
-          alert(this.totalpages);
+
           console.log("order_id:", this.order_id);
 
           this.refleshcode_rule();
@@ -526,9 +536,10 @@ export default {
   height: 500px;
 }
 .select_nums {
-  width: 30px;
-  background: orange;
+  width: 50px;
+  height: 50px;
+  background: burlywood;
   /* border: 0.5px inset chocolate; */
-  /* border-radius: 50%; */
+  border-radius: 50%;
 }
 </style>

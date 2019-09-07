@@ -191,7 +191,7 @@ export default {
   data() {
     return {
       pageindex: 1,
-      totalpages: 0,
+      totalpages: 1,
 
       upload_file: {
         filename: "",
@@ -248,6 +248,10 @@ export default {
           this.timeout = null;
         }
       }
+      if (newval === 2) {
+        this.showTotalPages(this.upload_file.url);
+        // console.log(this.upload_file.url);
+      }
     },
 
     payStatus: function(newval, oldval) {
@@ -279,6 +283,15 @@ export default {
   },
 
   methods: {
+    showTotalPages(url) {
+      // 是pdf格式的才调用此方法
+      if (url.slice(-3) === "pdf") {
+        PDFJS.getDocument(url).then(pdf => {
+          this.totalpages = pdf.numPages;
+          // console.log(this.totalpages);
+        });
+      }
+    },
     //   添加打印份数选择的函数
     downNumber() {
       if (this.print_args.qty > 1) {
@@ -309,24 +322,22 @@ export default {
       document.getElementById(ref).click();
     },
 
-    // showPDF(upload_file.url)
-
     is_valid_file_type($file_type) {
       if (
         $file_type == "image/gif" ||
         $file_type == "image/jpeg" ||
         $file_type == "image/jpg" ||
         $file_type == "image/png" ||
-        $file_type == "image/doc" ||
+        $file_type == "image/tif" ||
         $file_type == "application/pdf" ||
         $file_type == "application/wps-office.pptx" ||
         $file_type == "application/wps-office.xlsx" ||
         $file_type == "application/wps-office.docx" ||
         $file_type == "application/wps-office.ppt" ||
-        $file_type == "application/vnd.ms-excel" ||
         $file_type == "application/wps-office.doc" ||
         $file_type == "application/msword" ||
         $file_type == "application/vnd.ms-powerpoint" ||
+        $file_type == "application/vnd.ms-excel" ||
         $file_type ==
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
         $file_type ==
@@ -423,12 +434,6 @@ export default {
         }
 
         this.upload_file.url = data.url.file.path;
-        // alert(this.upload_file.url)
-
-        // ======直接通过pdf文件的url拿到总页数======
-        PDFJS.getDocument(this.upload_file.url).then(pdf => {
-          this.totalpages = pdf.numPages;
-        });
 
         this.upload_file.pdffilename = data.url.file.pdffilename;
 
@@ -731,9 +736,10 @@ export default {
 }
 
 .select_nums {
-  width: 30px;
-  background: orange;
+  width: 50px;
+  height: 50px;
+  background: burlywood;
   /* border: 0.5px inset chocolate; */
-  /* border-radius: 50%; */
+  border-radius: 50%;
 }
 </style>
