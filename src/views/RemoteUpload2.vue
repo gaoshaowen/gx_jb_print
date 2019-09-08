@@ -29,40 +29,39 @@
       </div>
 
       <div class="page2" v-show="pageindex==2">
-        <div>
+        <div class="file-box">
           <div class="row">
-            <div class="title_col">文件</div>
+            <div class="title_col">文件：</div>
             <div
               class="main_col"
             >{{upload_file.filename}} ( {{upload_file.size }} {{upload_file.unit}} )</div>
           </div>
 
           <div class="row">
-            <div class="title_col">色彩</div>
+            <div class="title_col">色彩：</div>
             <div class="main_col">
-              <input type="radio" name="color" value="black" v-model="print_args.color" /> 黑白
-              <input type="radio" name="color" value="color" v-model="print_args.color" />
+              <input type="radio" name="color" value="black" checked="true" @change="Price()" /> 黑白
+              
+              <span>&nbsp&nbsp&nbsp&nbsp</span>
+
+              <input type="radio" name="color" value="color" @change="ColorPrice()"/>
+
               彩色
             </div>
           </div>
 
           <div class="row">
-            <div class="title_col">单双面</div>
+            <div class="title_col">单双面：</div>
             <div class="main_col">
-              <input type="radio" name="side" value="one" v-model="print_args.side" /> 单面
+              <input type="radio" name="side" value="one" checked="true" @change="onePrice()" /> 单面
+              <span>&nbsp&nbsp&nbsp&nbsp</span>
               <input
                 type="radio"
                 name="side"
                 value="two-sided-long-edge"
-                v-model="print_args.side"
-              /> 双面长边
-              <input
-                type="radio"
-                name="side"
-                value="two-sided-short-edgee"
-                v-model="print_args.side"
-              />
-              双面短边
+                @change="doublePrice()"
+              /> 双面
+              
             </div>
           </div>
 
@@ -79,38 +78,38 @@
           </div>-->
 
           <div class="row">
-            <div class="title_col">份数</div>
+            <div class="title_col">打印份数：</div>
             <div class="main_col">
               <!-- <input type="text" name="qty" v-model="print_args.qty" /> -->
-              <button class="select_nums" @click="downNumber">-</button>
-              <span>{{ print_args.qty }}</span>
-              <button class="select_nums" @click="upNumber">+</button>
+              <button class="select_nums" @click="downNumber"><b>-</b></button>
+              <span><b style="color: red;"> {{ print_args.qty }} </b></span>
+              <button class="select_nums" @click="upNumber"><b>+</b></button>
             </div>
           </div>
           <!-- 添加页数 -->
           <div class="row">
-            <div class="title_col">文件页数</div>
+            <div class="title_col">文件面数：</div>
             <!-- 获取pdf的总页数 -->
             <div class="main_col">
               <!-- 直接传入pdf文件的url，拿到总页数，不调用PDF.vue组件 -->
-
-              <span>{{ totalpages }}</span>
+              <span>{{ totalpages }} 面</span>
             </div>
           </div>
 
           <!-- 打印的总页数（份数*文件页数 -->
           <div class="row">
-            <div class="title_col">总页数</div>
+            <div class="title_col">打印页数：</div>
             <div class="main_col">
-              <span>{{ print_args.qty * totalpages }}</span>
+              <span v-if="doubleFlag">{{ Math.ceil(print_args.qty * totalpages / 2) }} 页</span>
+              <span v-if="!doubleFlag">{{ print_args.qty * totalpages }} 页</span>
             </div>
           </div>
 
           <!-- 总金额 = 单价*份数*总页数-->
           <div class="row">
-            <div class="title_col">总金额</div>
+            <div class="title_col">总金额：</div>
             <div class="main_col">
-              <span>{{ total_fee * print_args.qty * totalpages }}</span>
+              <span><b style="color: red;">{{ (total_fee * print_args.qty * totalpages).toFixed(2) }}</b> 元</span>
             </div>
           </div>
 
@@ -166,8 +165,9 @@ export default {
   },
   data() {
     return {
+      doubleFlag: false,
       pageindex: 1,
-      totalpages: 0,
+      totalpages: 1,
       upload_file: {
         filename: "",
         pdffilename: "",
@@ -246,6 +246,25 @@ export default {
   },
 
   methods: {
+    // 普通页面价格
+    Price() {
+      this.total_fee = 0.01;
+    },
+    // 设置彩色的价格
+    ColorPrice() {
+      this.total_fee = this.total_fee * 4;
+      // alert("ggg");
+    },
+    // 单页面价格
+    onePrice() {
+      this.total_fee = 0.01;
+      this.doubleFlag = false;
+    },
+    // 设置双面打印价格、打印页数
+    doublePrice() {
+      // this.total_fee = this.total_fee * 2;
+      this.doubleFlag = true;
+    },
     // ======直接通过pdf文件的url拿到总页数======
     showTotalPages(url) {
       // 是pdf格式的才调用此方法
@@ -331,7 +350,8 @@ export default {
       let dataPost = {
         out_trade_no: this.order_id, //后台生成的订单号
         total_fee: this.total_fee, //交易金额
-        product_id: this.device_id //'3b6e9e3694a243214afcbebc18121310'  //32位
+        product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
+        total_fee: 0.01
       };
 
       this.axios
@@ -536,10 +556,34 @@ export default {
   height: 500px;
 }
 .select_nums {
-  width: 50px;
-  height: 50px;
-  background: burlywood;
-  /* border: 0.5px inset chocolate; */
-  border-radius: 50%;
+  display: inline-block;
+  padding: 15px 25px;
+  font-size: 24px;
+  cursor: pointer;
+  text-align: center;   
+  text-decoration: none;
+  outline: none;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+}
+.select_nums:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+/* 设置文件信息预览盒子的css样式 */
+
+.file-box {
+  margin: 0px 30px;
+  /* border: 1px solid blue; */
+  /* background-color: #FFCC99; */
+  text-align: center;
+}
+
+.page2 {
+  border: 1px solid #99CC99;
 }
 </style>

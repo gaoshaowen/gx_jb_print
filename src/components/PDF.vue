@@ -1,6 +1,8 @@
 <template>
   <div id="container">
-    <div id="show-pic"><img id="pic"/></div>
+    <div id="show-pic">
+      <img id="pic" />
+    </div>
     <!-- <div class="pdf-page"> -->
     <div class="foot" v-if="pdfDoc">
       <button class="left" v-if="pageNum>1" @click="onPrevPage">上一页</button>
@@ -35,7 +37,6 @@ export default {
   props: ["src"],
 
   methods: {
-    
     showPDF(url) {
       if (!url) return;
       // 如果文件的类型不是pdf格式的，就不调用pdf.js库，直接用js显示图片
@@ -46,8 +47,8 @@ export default {
         var mycanvas = document.getElementById("the-canvas");
         img.src = url;
         img.onload = function() {
-          mycanvas.style.display = 'none';
-        }
+          mycanvas.style.display = "none";
+        };
       } else {
         let _this = this;
         PDFJS.getDocument(url).then(pdf => {
@@ -115,7 +116,7 @@ export default {
   mounted() {
     this.showPDF(this.src);
   },
-  
+
   // 监听src的变化
   watch: {
     src: function(newval, oldval) {
@@ -128,11 +129,12 @@ export default {
  
 <style scoped>
 #container {
-  width: 750px;
+  /* width: 750px; */
+  width: 450px;
   display: block;
   margin: 10px auto;
-  border: 1px solid green;
-  width:100%;
+  border: 1px solid #99CC99;
+  width: 80%;
 }
 
 /* .pdf-page {
@@ -146,7 +148,8 @@ export default {
   /* border: 1px solid orange; */
 }
 #page-count-container {
-  border: 1px dashed orangered;
+  margin:4px;
+  background-color:#99CCCC;
   /* display: inline;
   float:left; */
 }
@@ -161,8 +164,9 @@ export default {
 
 /* 设置canvas的样式 */
 #the-canvas {
-  width: 100%;
-  height: 100%;
+  width: 40%;
+  height: 38%;
+  /* border: 2px solid red; */
 }
 
 /* 设置展示图片的div的样式 */

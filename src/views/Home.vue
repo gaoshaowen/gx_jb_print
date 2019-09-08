@@ -14,6 +14,7 @@
         </swiper>
       </div>
     </div>
+
     <div class="main flexbox">
       <div class="flexitem">
         <a href="#" @click.prevent="localupload">
@@ -31,7 +32,8 @@
     </div>
 
     <div class="footer">
-      <img :src="conf.virtualpath +'static/img/shangbiao.jpg'" />
+      <!-- <img :src="conf.virtualpath +'static/img/shangbiao.jpg'" /> -->
+      <span><b>加盟热线：</b>0755-29197989​</span>
     </div>
   </div>
 </template>
@@ -195,21 +197,23 @@ body {
 
 .layout {
   /* width: 1400px; */
+  /* border: 2px solid blue; */
   margin: 0 auto;
   position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
   bottom: 0px;
+  /* background-color: #CCCCCC; */
 }
 
 .header {
-  margin: 0 auto;
-  /* background-color: red; */
+  margin: 40px auto;
+  /* border: 2px solid red; */
   top: 0px;
-  height: 50%;
+  height: 40%;
   min-height: 300px;
-  width: 100%;
+  width: 80%;
   overflow: hidden;
   background-color: white;
 }
@@ -235,25 +239,32 @@ body {
   z-index: -1;
 }
 
+/* 上传按钮样式 */
 .flexbox {
   display: -webkit-flex;
   display: flex;
   flex-wrap: row wrap;
   justify-content: space-around;
   align-items: flex-start;
+  border-left: 1px outset #3399CC;
+  border-right: 1px outset #3399CC;
+  /* border-bottom: 1px outset #3399CC; */
+  width: 80%;
 }
 
 .flexitem {
   box-sizing: border-box;
   display: inline-block;
-
+  /* border-bottom: 1px outset #003399; */
   width: 360px;
   height: 250px;
   overflow: hidden;
+
 }
 
 .swiperimg {
   max-height: 300px;
+  width: 92%;
 }
 
 .usbimg {
@@ -263,6 +274,17 @@ body {
 
 h2 {
   margin-top: 3px;
-  color: dimgray;
+  font-size: 20px;
+  letter-spacing: 6px;
+  /* color: dimgray; */
 }
+
+/* 轮播图的样式 */
+.partnerSwiper {
+  /* border-bottom: 1px outset #3399CC; */
+  /* padding: 8px 8px 40px 8px; */
+}
+
+
+
 </style>
