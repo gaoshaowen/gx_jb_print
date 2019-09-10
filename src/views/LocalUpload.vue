@@ -65,11 +65,9 @@
           <div class="row">
             <div class="title_col">色彩：</div>
             <div class="main_col">
-              <input type="radio" name="color" value="black" checked="true" @change="Price()" /> 黑白
-              
-              <span>&nbsp&nbsp&nbsp&nbsp</span>
-
-              <input type="radio" name="color" value="color" @change="ColorPrice()"/>
+              <input type="radio" name="color" value="black" v-model="print_args.color" /> 黑白
+            
+              <input type="radio" name="color" value="color" v-model="print_args.color" />
 
               彩色
             </div>
@@ -78,13 +76,13 @@
           <div class="row">
             <div class="title_col">单双面：</div>
             <div class="main_col">
-              <input type="radio" name="side" value="one" checked="true" @change="onePrice()" /> 单面
-              <span>&nbsp&nbsp&nbsp&nbsp</span>
+              <input type="radio" name="side" value="one" v-model="print_args.side" /> 单面
+              <!-- <span>&nbsp&nbsp&nbsp&nbsp</span> -->
               <input
                 type="radio"
                 name="side"
                 value="two-sided-long-edge"
-                @change="doublePrice()"
+                v-model="print_args.side"
               /> 双面
               
             </div>
@@ -134,14 +132,14 @@
           <div class="row">
             <div class="title_col">总金额：</div>
             <div class="main_col">
-              <span><b style="color: red;">{{ (total_fee * print_args.qty * totalpages).toFixed(2) }}</b> 元</span>
+              <span><b style="color: red;">{{ (this.total_fee * print_args.qty * totalpages).toFixed(2) }}</b> 元</span>
             </div>
           </div>
 
           <div class="row">
             <div class="title_col">支付方式：</div>
             <div class="main_col">
-              <template v-for="item, ind in pay_types">
+              <template v-for="(item, ind) in pay_types">
                 <input type="radio" v-model="pay_type" :value="item.id" :key="ind" />
                 {{ item.text }}
               </template>
@@ -210,7 +208,7 @@ export default {
         side: "one",
         pagesize: "A4",
         qty: 1,
-        doublePage: 2,
+
       },
 
       pay_type: "weixin",
@@ -260,10 +258,37 @@ export default {
       } else {
         this.print_status_id = 0;
       }
+    },
+    // 监听选择打印色彩的属性
+    color: function(newval, oldval) {
+      // alert("ggg");
+      console.log("newval:", newval, "oldval:", oldval);
+    },
+    // 单双面属性
+    side:function(newval, oldval) {
+      console.log("newval:", newval, "oldval:", oldval);
     }
   },
 
   computed: {
+    // 计算打印颜色、单双面属性
+    color() {
+      // alert(this.print_args.color);
+      if (this.print_args.color === "color") {
+        this.total_fee = this.total_fee * 4;
+      } else {
+        this.total_fee = 0.01;
+      }
+    },
+    side() {
+      // doubleFlag标记双面打印时的页数输出
+      if (this.print_args.side === "one") {
+        this.doubleFlag = false;
+      } else {
+        this.doubleFlag = true;
+      }
+    },
+
     print_status() {
       switch (this.print_status_id) {
         case 1:
@@ -279,31 +304,10 @@ export default {
         default:
           return "支付中...";
       }
-    }
+    },
   },
 
   methods: {
-    // 普通页面价格
-    Price() {
-      this.total_fee = 0.01;
-    },
-    // 设置彩色的价格
-    ColorPrice() {
-      this.total_fee = this.total_fee * 4;
-      // alert("ggg");
-    },
-    // 单页面价格
-    onePrice() {
-      this.total_fee = 0.01;
-      this.doubleFlag = false;
-    },
-    // 设置双面打印价格、打印页数
-    doublePrice() {
-      // this.total_fee = this.total_fee * 2;
-      this.doubleFlag = true;
-      // console.log(Math.ceil(this.print_args.qty * this.totalpages / 2));
-    },
-
     showTotalPages(url) {
       // 是pdf格式的才调用此方法
       if (url.slice(-3) === "pdf") {
@@ -527,7 +531,6 @@ export default {
         out_trade_no: this.order_id, //后台生成的订单号
         total_fee: this.total_fee, //交易金额
         product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
-        total_fee: 0.01
       };
 
       this.axios

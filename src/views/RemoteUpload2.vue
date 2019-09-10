@@ -116,7 +116,7 @@
           <div class="row">
             <div class="title_col">支付方式</div>
             <div class="main_col">
-              <template v-for="item, ind in pay_types">
+              <template v-for="(item, ind) in pay_types">
                 <input type="radio" v-model="pay_type" :value="item.id" :key="ind" />
                 {{ item.text }}
               </template>
@@ -223,10 +223,36 @@ export default {
       } else {
         this.print_status_id = 0;
       }
+    },
+    // 监听选择打印色彩的属性
+    color: function(newval, oldval) {
+      // alert("ggg");
+      console.log("newval:", newval, "oldval:", oldval);
+    },
+    // 单双面属性
+    side:function(newval, oldval) {
+      console.log("newval:", newval, "oldval:", oldval);
     }
   },
 
   computed: {
+     // 计算打印颜色、单双面属性
+    color() {
+      // alert(this.print_args.color);
+      if (this.print_args.color === "color") {
+        this.total_fee = this.total_fee * 4;
+      } else {
+        this.total_fee = 0.01;
+      }
+    },
+    side() {
+      // doubleFlag标记双面打印时的页数输出
+      if (this.print_args.side === "one") {
+        this.doubleFlag = false;
+      } else {
+        this.doubleFlag = true;
+      }
+    },
     print_status() {
       switch (this.print_status_id) {
         case 1:
@@ -246,25 +272,6 @@ export default {
   },
 
   methods: {
-    // 普通页面价格
-    Price() {
-      this.total_fee = 0.01;
-    },
-    // 设置彩色的价格
-    ColorPrice() {
-      this.total_fee = this.total_fee * 4;
-      // alert("ggg");
-    },
-    // 单页面价格
-    onePrice() {
-      this.total_fee = 0.01;
-      this.doubleFlag = false;
-    },
-    // 设置双面打印价格、打印页数
-    doublePrice() {
-      // this.total_fee = this.total_fee * 2;
-      this.doubleFlag = true;
-    },
     // ======直接通过pdf文件的url拿到总页数======
     showTotalPages(url) {
       // 是pdf格式的才调用此方法
