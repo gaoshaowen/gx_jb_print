@@ -65,11 +65,8 @@
           <div class="row">
             <div class="title_col">色彩：</div>
             <div class="main_col">
-              <input type="radio" name="color" value="black" v-model="print_args.color" /> 黑白
-            
-              <input type="radio" name="color" value="color" v-model="print_args.color" />
-
-              彩色
+              <input type="radio" name="color" value="black" v-model="print_args.color" /> 黑白  
+              <input type="radio" name="color" value="color" v-model="print_args.color" /> 彩色
             </div>
           </div>
 
@@ -132,7 +129,7 @@
           <div class="row">
             <div class="title_col">总金额：</div>
             <div class="main_col">
-              <span><b style="color: red;">{{ (this.total_fee * print_args.qty * totalpages).toFixed(2) }}</b> 元</span>
+              <span><b style="color: red;">{{ total_money }}</b> 元</span>
             </div>
           </div>
 
@@ -187,7 +184,7 @@ import PDFJS from "pdfjs-dist";
 export default {
   data() {
     return {
-      doubleFlag: false,
+ 
       pageindex: 1,
       totalpages: 1,
 
@@ -202,7 +199,11 @@ export default {
         url: ""
       },
 
-      total_fee: 0.01,
+      doubleFlag: false,  // 双页
+      total_fee: 0.01,  //计算的单价
+      price: 0.01, //单价
+      priceobj:{},
+
       print_args: {
         color: "black",
         side: "one",
@@ -273,20 +274,28 @@ export default {
   computed: {
     // 计算打印颜色、单双面属性
     color() {
-      // alert(this.print_args.color);
-      if (this.print_args.color === "color") {
-        this.total_fee = this.total_fee * 4;
-      } else {
-        this.total_fee = 0.01;
-      }
+
+      this.total_fee = this.price * this.priceobj[this.print_args.color ]
+      console.log(this.total_fee );
+
+      // if (this.print_args.color === "color") {
+      //   this.total_fee = this.price * 4;
+      // } else {
+      //   this.total_fee = this.price;
+      // }
     },
     side() {
       // doubleFlag标记双面打印时的页数输出
+       console.log(this.print_args.side);
       if (this.print_args.side === "one") {
         this.doubleFlag = false;
       } else {
         this.doubleFlag = true;
       }
+    },
+
+    total_money(){
+      return  (this.total_fee * this.print_args.qty * this.totalpages).toFixed(2)
     },
 
     print_status() {
@@ -499,37 +508,36 @@ export default {
     nativepay() {
       //二维码生成
 
-      let print_args = `color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`;
+      let args = `color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`;
 
       console.log("print copys:", this.print_args.qty);
       this.axios
         .get(this.conf.server + "/printapi/order", {
           params: {
-            total_fee: this.total_fee,
+            total_fee:  this.total_money, // 总金额
             dev_id: this.device_id,
             pay_type: this.pay_type,
             file_url: this.upload_file.url,
             filename: this.upload_file.filename,
             qty: this.print_args.qty,
-            print_args: print_args
+            print_args: args
           }
         })
         .then(res => {
           console.log(res.data);
-
           this.order_id = res.data.out_trade_no;
-          this.total_fee = res.data.total_fee;
-
           console.log("order_id:", this.order_id);
 
           this.refleshcode_rule();
         });
     },
 
+   
+
     refleshcode_rule() {
       let dataPost = {
         out_trade_no: this.order_id, //后台生成的订单号
-        total_fee: this.total_fee, //交易金额
+        total_fee: this.total_money, //交易金额
         product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
       };
 
@@ -596,8 +604,51 @@ export default {
             console.log(err);
           });
       }, 5 * 1000);
-    }
+    },
+
+    getprice(){
+      
+        this.axios
+          .get(this.conf.server + "/printapi/getprice", {
+            params: {
+              dev_id: this.device_id
+            }
+          })
+          .then(res => {
+
+            console.log('/printapi/getprice:', res.data);
+            if ( res.data.code ==0 ){
+              this.priceobj ={
+                base_price:res.data.data.base_price,
+                black:res.data.data.black,
+                color:res.data.data.color,
+                A3:res.data.data.A3,
+                A4:res.data.data.A4,
+                A5:res.data.data.A5,
+                pagesize1:res.data.data.pagesize1,
+                pagesize2:res.data.data.pagesize2,
+              }
+
+              this.price = this.priceobj.base_price
+            
+              this.total_fee = this.price * this.priceobj[this.print_args.color ]
+
+              console.log('priceobj:', this.priceobj)
+            }
+            else {
+              this.backhome()
+
+            }
+
+        });
+
+    },
+
+
+
   },
+
+  
 
   mounted() {
     console.log(this.$route.query);
@@ -607,8 +658,9 @@ export default {
     } else {
       this.device_id = localStorage.getItem("device_id");
     }
-
     console.log("device_id: ", this.device_id);
+
+    this.getprice()
 
     if (this.$route.query.order_id) {
       this.order_id = this.$route.query.order_id;
