@@ -52,8 +52,7 @@
               <!-- <span>&nbsp&nbsp&nbsp&nbsp</span> -->
 
               <input type="radio" name="side"  value="two-sided-long-edge" v-model="print_args.side"/> 双面
-
-              
+ 
             </div>
           </div>
 
