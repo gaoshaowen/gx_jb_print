@@ -50,7 +50,16 @@
             <div class="main_col">
               <input type="radio" name="side" value="one" v-model="print_args.side" /> 单面
               <!-- <span>&nbsp&nbsp&nbsp&nbsp</span> -->
+<<<<<<< HEAD
               <input type="radio" name="side"  value="two-sided-long-edge" v-model="print_args.side"/> 双面
+=======
+              <input
+                type="radio"
+                name="side"
+                value="two-sided-long-edge"
+                v-model="print_args.side"
+              /> 双面
+>>>>>>> 1faa6f6ba983c4cff5b1fb72a206c8383a37c7bc
               
             </div>
           </div>
