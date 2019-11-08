@@ -40,27 +40,17 @@
           <div class="row">
             <div class="title_col">色彩：</div>
             <div class="main_col">
-              <input type="radio" name="color" value="black" checked="true" @change="Price()" /> 黑白
-              
-              <span>&nbsp&nbsp&nbsp&nbsp</span>
-
-              <input type="radio" name="color" value="color" @change="ColorPrice()"/>
-
-              彩色
+              <input type="radio" name="color" value="black" v-model="print_args.color" /> 黑白  
+              <input type="radio" name="color" value="color" v-model="print_args.color" /> 彩色
             </div>
           </div>
 
           <div class="row">
             <div class="title_col">单双面：</div>
             <div class="main_col">
-              <input type="radio" name="side" value="one" checked="true" @change="onePrice()" /> 单面
-              <span>&nbsp&nbsp&nbsp&nbsp</span>
-              <input
-                type="radio"
-                name="side"
-                value="two-sided-long-edge"
-                @change="doublePrice()"
-              /> 双面
+              <input type="radio" name="side" value="one" v-model="print_args.side" /> 单面
+              <!-- <span>&nbsp&nbsp&nbsp&nbsp</span> -->
+              <input type="radio" name="side"  value="two-sided-long-edge" v-model="print_args.side"/> 双面
               
             </div>
           </div>
@@ -109,7 +99,7 @@
           <div class="row">
             <div class="title_col">总金额：</div>
             <div class="main_col">
-              <span><b style="color: red;">{{ (total_fee * print_args.qty * totalpages).toFixed(2) }}</b> 元</span>
+              <span><b style="color: red;">{{ total_money }}</b> 元</span>
             </div>
           </div>
 
@@ -183,10 +173,13 @@ export default {
         qty: 1
       },
 
-      total_fee: 0.01,
 
-      pay_type: 1,
-      pay_types: [{ id: 1, text: "微信" }],
+      total_fee: 0.01,  //计算的单价
+      price: 0.01, //单价
+      priceobj:{},
+
+      pay_type: "weixin",
+      pay_types: [{ id: "weixin", text: "微信" }],
 
       qr_url: "", //用于打码支付
 
@@ -238,12 +231,16 @@ export default {
   computed: {
      // 计算打印颜色、单双面属性
     color() {
+
+      this.total_fee = this.price * this.priceobj[this.print_args.color ]
+      console.log('this.total_fee:' , this.total_fee );
       // alert(this.print_args.color);
-      if (this.print_args.color === "color") {
-        this.total_fee = this.total_fee * 4;
-      } else {
-        this.total_fee = 0.01;
-      }
+      // if (this.print_args.color === "color") {
+      //   this.total_fee = this.total_fee * 4;
+      // } else {
+      //   this.total_fee = 0.01;
+      // }
+
     },
     side() {
       // doubleFlag标记双面打印时的页数输出
@@ -253,6 +250,12 @@ export default {
         this.doubleFlag = true;
       }
     },
+
+    total_money(){
+      return  (this.total_fee * this.print_args.qty * this.totalpages).toFixed(2)
+    },
+
+
     print_status() {
       switch (this.print_status_id) {
         case 1:
@@ -332,7 +335,7 @@ export default {
       this.axios
         .get(this.conf.server + "/printapi/order", {
           params: {
-            total_fee: this.total_fee,
+            total_fee: this.total_money,
             dev_id: this.device_id,
             pay_type: this.pay_type,
             file_url: this.upload_file.url,
@@ -345,7 +348,6 @@ export default {
           console.log(res.data);
 
           this.order_id = res.data.out_trade_no;
-          this.total_fee = res.data.total_fee;
 
           console.log("order_id:", this.order_id);
 
@@ -356,9 +358,8 @@ export default {
     refleshcode_rule() {
       let dataPost = {
         out_trade_no: this.order_id, //后台生成的订单号
-        total_fee: this.total_fee, //交易金额
+        total_fee: this.total_money, //交易金额
         product_id: this.device_id, //'3b6e9e3694a243214afcbebc18121310'  //32位
-        total_fee: 0.01
       };
 
       this.axios
@@ -424,8 +425,52 @@ export default {
             console.log(err);
           });
       }, 5 * 1000);
-    }
+    },
+
+    getprice(){
+      
+        this.axios
+          .get(this.conf.server + "/printapi/getprice", {
+            params: {
+              dev_id: this.device_id
+            }
+          })
+          .then(res => {
+
+            console.log('/printapi/getprice:', res.data);
+            if ( res.data.code ==0 ){
+              this.priceobj ={
+                base_price:res.data.data.base_price,
+                black:res.data.data.black,
+                color:res.data.data.color,
+                A3:res.data.data.A3,
+                A4:res.data.data.A4,
+                A5:res.data.data.A5,
+                pagesize1:res.data.data.pagesize1,
+                pagesize2:res.data.data.pagesize2,
+              }
+
+              this.price = this.priceobj.base_price
+            
+              this.total_fee = this.price * this.priceobj[this.print_args.color ]
+
+              console.log('priceobj:', this.priceobj)
+            }
+            else {
+              this.backhome()
+
+            }
+
+        });
+        
+    },
+
+
   },
+
+
+  
+
 
   mounted() {
     console.log(this.$route.query);
@@ -435,6 +480,9 @@ export default {
     }
 
     console.log("device_id: ", this.device_id);
+
+    this.getprice()
+
 
     if (this.$route.query.order_id) {
       this.order_id = this.$route.query.order_id;
