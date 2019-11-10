@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>网上支付商户模拟器</title>
+<style type="text/css">
+<!--
+body {
+	font-size: 9pt;
+	font-style: normal;
+	line-height: 20px;
+	font-weight: normal;
+	font-variant: normal;
+	color: #000099;
+}
+.smallfont {
+	font-size: 9pt;
+	font-weight: bold;
+	color: #FF0000;
+}
+.bigFont {
+	font-size: 16pt;
+	font-style: normal;
+	font-weight: bolder;
+	font-variant: normal;
+	color: #000000;
+}
+.text {
+	font-size: 9pt;
+	font-style: normal;
+	line-height: normal;
+	color: #000000;
+	background-color: #6699FF;
+	letter-spacing: normal;
+	word-spacing: normal;
+	width: auto;
+	border: 1px dotted #CCCCCC;
+}
+.text1 {
+	font-size: 14pt;
+	font-weight: bold;
+	color: #330099;
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: dotted;
+	border-left-style: none;
+	border-top-color: #FF0000;
+	border-right-color: #FF0000;
+	border-bottom-color: #FF0000;
+	border-left-color: #FF0000;
+-->
+</style>
+
+<script language="JavaScript" src="md5.js"></script>
+<script language="JavaScript"  src="pay.js"></script>
+</head>
+
+<body bgcolor="#CCCCCC" onLoad="setValue()">
+
+<table width="760" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+	<form action="" method="post" name="MD5form2" id="MD5form2" target="_blank"></form>
+    <td><form action="" method="post" name="MD5form" id="MD5form" target="_blank">
+        <table width="80%" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#000000">
+          <tr> 
+            <td height="49"> <div align="center"><span class="bigFont">网上银行二维码MD5模拟程序 
+                </span><br>
+                <span class="smallfont">Vsersion 1.0<br>
+                <a href="http://128.128.96.175:8001/app/V5/CN/STY1/QR.jsp" target="_blank">Author : 曹孝成</a><br>
+                Create :2016/10/17</span></div></td>
+          </tr>
+
+          <tr> 
+
+            <td bordercolor="#CCCCCC" bgcolor="#FFFFFF">
+
+			<table width="80%" border="0" align="center" cellpadding="0" cellspacing="0">
+
+				<tr> 
+
+                  <td width="26%" height="20" nowrap>商户代码【MERCHANTID】</td>
+
+                  <td width="74%" height="20"><input name="MERCHANTID" type="text" class="text1" id="MERCHANTID"></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20">商户柜台代码【POSID】</td>
+
+                  <td height="20"><input name="POSID" type="text" class="text1" id="POSID"></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20">分行代码【BRANCHID】</td>
+
+                  <td height="20"><input name="BRANCHID" type="text" class="text1" id="BRANCHID"></td>
+
+                </tr>
+
+				
+
+                <tr> 
+
+                  <td height="20">定单号【ORDERID】</td>
+
+                  <td height="20"><input name="ORDERID" type="text" class="text1" id="ORDERID"></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20">付款金额【PAYMENT】</td>
+
+                  <td height="20"><input name="PAYMENT" type="text" class="text1" id="PAYMENT"></td>
+
+                </tr>
+				
+				<tr> 
+
+                  <td height="20">币种【CURCODE】</td>
+
+                  <td height="20"><input name="CURCODE" type="text" class="text1" id="CURCODE"></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20">交易码【TXCODE】</td>
+
+                  <td height="20"><input name="TXCODE" type="text" class="text1" id="TXCODE"></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20">备注1【REMARK1】</td>
+
+                  <td height="20"><input name="REMARK1" type="text" class="text1" id="REMARK1"></td>
+
+                </tr>
+
+                <tr>
+
+                  <td height="20">备注2【REMARK2】</td>
+
+                  <td height="20"><input name="REMARK2" type="text" class="text1" id="REMARK2"></td>
+
+                </tr>
+
+				<tr>
+
+                  <td height="20">超时时间【TIMEOUT】</td>
+
+                  <td height="20"><input name="TIMEOUT" type="text" class="text1" id="TIMEOUT"></td>
+
+                </tr>
+
+				<tr>
+
+                  <td height="20">返回类型【RETURNTYPE】</td>
+
+                  <td height="20"><input name="RETURNTYPE" type="text" class="text1" id="RETURNTYPE"></td>
+
+                </tr>
+
+				 <tr id="PUB32TR1"> 
+
+                  <td height="20">公钥后30位【PUB】</td>
+
+                  <td height="20"><input name="PUB" type="text" class="text1" id="PUB32TR2" value="bd0f9a0658b5640c37378787020111"></td>
+
+                </tr>
+
+
+				<tr id="MACTR"> 
+
+                  <td height="20">MACSTR【MACSTR】</td>
+
+                  <td height="20" width="350" id="MACSTR"></td>
+
+                </tr>
+
+				<tr> 
+
+                  <td height="20">银行网址【URL】</td>
+
+                  <td height="20">
+
+				  <select name="bankURL" id="bankURL">
+
+					<option value='http://128.128.97.200:8101/CCBIS/ccbMain?CCB_IBSVersion=V6'>
+					SIT:http://128.128.97.200:8101/CCBIS/ccbMain</option>
+					<option value='http://128.128.97.67/CCBIS/ccbMain?CCB_IBSVersion=V6'>
+					uat:http://128.128.97.67/CCBIS/ccbMain</option>
+					<option value='http://128.128.97.95:8101/CCBIS/ccbMain?CCB_IBSVersion=V6'>
+					验证环境:http://128.128.97.95:8101/CCBIS/ccbMain</option>
+					<option value='https://ibsbjstar.ccb.com.cn/CCBIS/ccbMain?CCB_IBSVersion=V6'>
+					生产:https://ibsbjstar.ccb.com.cn/CCBIS/ccbMain</option>
+                   </select>
+
+				  <br>
+
+                    <span class="smallfont">说明：要从http://开始添加，到？号以前，？号不要添加</span></td>
+
+                </tr>
+                <tr> 
+
+                  <td height="20" colspan="2"><div align="center"> 
+
+                      <input name="makeMd5" type="button" id="makeMd5" value="生成MD5串" onClick="make()">
+
+                      <input type="button" name="Submit2" value="重置输入数据项" onClick="newRest()">
+
+					  <input name="sendB" type="button" id="sendB" onClick="go(window.MD5form.result.value)" value="   发送到银行端   ">
+
+                    </div></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20" colspan="2"><div align="center"> 
+					  <textarea name="encry" cols="80" rows="5" wrap="VIRTUAL" class="text" id="encry"></textarea>
+					<br/><br/>
+                      <textarea name="result" cols="80" rows="10" wrap="VIRTUAL" class="text" id="result"></textarea>
+
+                    </div></td>
+
+                </tr>
+
+                <tr> 
+
+                  <td height="20" colspan="2"><div align="center"> 
+
+                      
+
+                    </div></td>
+
+  <td height="20"><div align="center"> 
+                    </div></td>
+
+
+                </tr>
+
+              </table>
+
+			  </td>
+
+          </tr>
+
+        </table>
+
+        <div align="center">相关变量，可以通过对pay.js进行配置</div>
+
+		<input type="hidden" name="URL01" value="">
+
+		<input type="hidden" name="MAC" id="MAC" value="">
+
+		<input type="hidden" name="REM1" value="">
+
+		<input type="hidden" name="REM2" value="">
+
+
+	    </form></td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>

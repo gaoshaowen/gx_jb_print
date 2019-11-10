@@ -147,25 +147,11 @@
         <div class="footer">
           <button class="el-button el-button-primary" @click="backhome">返回首页</button>
           <button class="el-button el-button-primary" @click="pageindex--">上一步</button>
-          <button class="el-button el-button-primary" @click="pay"><b>立即支付</b></button>
+          <button class="el-button el-button-primary" @click="nativepay"><b>立即支付</b></button>
         </div>
       </div>
 
       <div class="page3" v-show="pageindex==3">
-        <iframe id="showqrcode">
-          <form action="" method="post" name="MD5form2" id="MD5form2" target="showqrcode"></form>
-        </iframe>
-
-        <div>{{ print_status}}</div>
-
-        <div class="footer">
-          <!-- <button class="el-button el-button-primary" @click="pay">刷新支付码</button> -->
-          <button class="el-button el-button-primary" @click="backhome">返回首页</button>
-          <!-- <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button> -->
-        </div>
-      </div>
-
-      <!-- <div class="page3" v-show="pageindex==3">
         <div>
           <div id="qrcode" ref="qrcode" style="display:inline-block;"></div>
         </div>
@@ -175,11 +161,9 @@
         <div class="footer">
           <button class="el-button el-button-primary" @click="refleshcode_rule">刷新支付码</button>
           <button class="el-button el-button-primary" @click="backhome">返回首页</button>
-          <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button> 
+          <!-- <button class="el-button el-button-primary"  @click="shensu"  v-show="upload_type == 'local'"> 打印失败申诉 </button> -->
         </div>
-      </div> -->
-
-
+      </div>
     </div>
   </div>
 </template>
@@ -506,10 +490,7 @@ export default {
       this.$refs[ref].value = "";
     },
 
-
-
     generateqr() {
-      
       this.$refs["qrcode"].value = "";
       var element_div = document.getElementById("qrcode");
       //window.alert("element_div"+element_div);
@@ -526,9 +507,8 @@ export default {
       });
     },
 
-    pay() {
-      //立即支付
-      
+    nativepay() {
+      //二维码生成
 
       let args = `color_mode=${this.print_args.color},sides=${this.print_args.side},copys=${this.print_args.qty}`;
 
@@ -550,21 +530,11 @@ export default {
           this.order_id = res.data.out_trade_no;
           console.log("order_id:", this.order_id);
 
-          let url= jhpay.make( this.order_id, this.total_money )
-          this.gourl(url)
-
+          this.refleshcode_rule();
         });
-
-
     },
 
-    gourl( sendUrl){
-      var objMD5form=document.getElementById("MD5form2");
-      objMD5form.method="post";
-      objMD5form.action=sendUrl;
-      objMD5form.submit();
-    },
-
+   
 
     refleshcode_rule() {
       let dataPost = {
@@ -593,8 +563,6 @@ export default {
           this.$throwError(err);
         });
     },
-
-
 
     CheckBill(order_id) {
       //参考https://juejin.im/post/5afb873f51882542ac7d6998
