@@ -152,7 +152,7 @@
       </div>
 
       <div class="page3" v-show="pageindex==3">
-        <iframe id="showqrcode">
+        <iframe id="showqrcode" name="showqrcode" style="b">
           <form action="" method="post" name="MD5form2" id="MD5form2" target="showqrcode"></form>
         </iframe>
 
@@ -563,6 +563,8 @@ export default {
       objMD5form.method="post";
       objMD5form.action=sendUrl;
       objMD5form.submit();
+
+      this.pageindex = 3;
     },
 
 

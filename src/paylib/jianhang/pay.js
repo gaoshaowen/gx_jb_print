@@ -1,3 +1,5 @@
+var {hex_md5} = require('./md5.js')
+
 //var MERCHANTID ='105584073990033';              //UAT--可用防钓鱼接口
 //var POSID='100000415';                 			//分行代码
 var MERCHANTID = '105000759989591';
@@ -106,3 +108,5 @@ function newRest(){
    window.MD5form.bankURL.value=bankURL;
    //window.MD5form.reset();
 }
+
+export default { make }
