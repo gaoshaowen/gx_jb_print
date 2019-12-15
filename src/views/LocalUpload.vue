@@ -156,9 +156,17 @@
       </div>
 
       <div class="page3" v-show="pageindex==3">
+<<<<<<< HEAD
         <iframe id="showqrcode" name="showqrcode" frameBorder="0" scrolling="no" >
           <form action="" method="post" name="MD5form2" id="MD5form2" target="showqrcode"></form>
         </iframe>
+=======
+       
+        <form action="" method="post" name="MD5form2" id="MD5form2" target="showqrcode"></form>
+
+        <!-- <form class="form-horizontal" method="post" target="showqrcode" action="user-login" οnsubmit="return checkRegForm();" > -->
+        <iframe name="showqrcode" frameborder=0 width=0 height=0></iframe>
+>>>>>>> bfa700ad970681f288071026f08caf177dbe502a
 
         <div>{{ print_status}}</div>
 
