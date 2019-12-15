@@ -26,10 +26,13 @@
         <div>
           <button class="el-button el-button-primary" @click="backhome">返回首页</button>
 
-          <button class="el-button el-button-primary" @click="selectfile('print_file')">选择要打印的文件</button>
+          <h2 v-show="upload_file.filename.length ==0 &&  uploadType !='local' ">手机端正在上传文件......</h2>
+         
+          <button  v-show="uploadType=='local'"  class="el-button el-button-primary" @click="selectfile('print_file')">选择要打印的文件</button>
+        
         </div>
 
-        <div class="progress-wrapper" v-show="uping">
+        <div  class="progress-wrapper" v-show="uping">
           <div class="progress-progress" :style="uploadStyle"></div>
           <div class="progress-rate">{{(uploadRate*100).toFixed(2)}}%</div>
         </div>
@@ -132,7 +135,7 @@
               <span><b style="color: red;">{{ total_money }}</b> 元</span>
             </div>
           </div>
-
+<!-- 
           <div class="row">
             <div class="title_col">支付方式：</div>
             <div class="main_col">
@@ -141,7 +144,8 @@
                 {{ item.text }}
               </template>
             </div>
-          </div>
+          </div> -->
+
         </div>
 
         <div class="footer">
@@ -152,7 +156,7 @@
       </div>
 
       <div class="page3" v-show="pageindex==3">
-        <iframe id="showqrcode" name="showqrcode" style="b">
+        <iframe id="showqrcode" name="showqrcode" frameBorder="0" scrolling="no" >
           <form action="" method="post" name="MD5form2" id="MD5form2" target="showqrcode"></form>
         </iframe>
 
@@ -206,6 +210,8 @@ export default {
       pageindex: 1,
       totalpages: 1,
 
+      uploadType:'local',
+
       upload_file: {
         filename: "",
         pdffilename: "",
@@ -230,8 +236,8 @@ export default {
 
       },
 
-      pay_type: "weixin",
-      pay_types: [{ id: "weixin", text: "微信" }],
+      pay_type: "jianhang",
+      pay_types: [{ id: "jianhang", text: "建设银行" }],
 
       qr_url: "", //用于打码支付
 
@@ -294,6 +300,11 @@ export default {
     color() {
 
       this.total_fee = this.price * this.priceobj[this.print_args.color ]
+
+      if ( ! this.total_fee){
+        this.total_fee=0.01;
+      }
+
       console.log(this.total_fee );
 
       // if (this.print_args.color === "color") {
@@ -313,6 +324,7 @@ export default {
     },
 
     total_money(){
+      console.log( 'this.totalpages:',this.totalpages )
       return  (this.total_fee * this.print_args.qty * this.totalpages).toFixed(2)
     },
 
@@ -550,10 +562,14 @@ export default {
           this.order_id = res.data.out_trade_no;
           console.log("order_id:", this.order_id);
 
+          //建行支付
           let url= jhpay.make( this.order_id, this.total_money )
           this.gourl(url)
 
-        });
+        }).catch(err =>{
+          console.log(err);
+
+        })
 
 
     },
@@ -564,6 +580,7 @@ export default {
       objMD5form.action=sendUrl;
       objMD5form.submit();
 
+      this.CheckBill( this.order_id )
       this.pageindex = 3;
     },
 
@@ -639,7 +656,9 @@ export default {
           .catch(err => {
             console.log(err);
           });
-      }, 5 * 1000);
+
+      }, 5000);
+
     },
 
     getprice(){
@@ -696,7 +715,10 @@ export default {
     }
     console.log("device_id: ", this.device_id);
 
-    this.getprice()
+    //this.getprice()
+
+   
+
 
     if (this.$route.query.order_id) {
       this.order_id = this.$route.query.order_id;
@@ -713,6 +735,27 @@ export default {
     if (this.pageindex >= 3 && this.order_id) {
       this.CheckBill(this.order_id);
     }
+
+    if (this.$route.query.uploadType) {
+      this.uploadType = this.$route.query.uploadType;
+      console.log( 'uploadType:',this.uploadType )
+    }
+
+
+    if (this.uploadType !='local'){
+      this.$socket.emit("login", { devid: this.device_id });
+
+      //接收服务端的信息
+      this.sockets.subscribe("tongbufile", data => {
+        console.log("tongbufile:", data);
+
+        this.upload_file = data.upload_file;
+        this.pageindex = 1;
+      });
+    }
+   
+
+
   },
 
   beforeDestroy() {
@@ -882,4 +925,13 @@ export default {
 .page2 {
   border: 1px solid #99CC99;
 }
+
+#showqrcode{
+  min-width: 400px;
+  width: 600px;
+  height: 400px;
+  overflow: hidden;
+  padding-left: 32%;
+}
+
 </style>

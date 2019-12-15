@@ -506,6 +506,8 @@ export default {
       this.upload_file = data.upload_file;
       this.pageindex = 1;
     });
+
+    
   },
 
   beforeDestroy() {

@@ -103,7 +103,7 @@ export default {
         window.clearTimeout(this.timeout);
         this.timeout = null;
       }
-      this.$router.push("/localupload?devid=" + this.device_id);
+      this.$router.push("/localupload?uploadType=local&devid=" + this.device_id);
     },
 
     generateqr(device_id) {
@@ -114,7 +114,8 @@ export default {
         url = url.substring(0, index);
       }
 
-      let qr_code = url + "RemoteUpload?devid=" + device_id;
+      //let qr_code = url + "RemoteUpload?devid=" + device_id;
+      let qr_code = url + "localupload?uploadType=remote&devid=" + device_id;
       console.log("qr_code:", qr_code);
 
       let qrcode = new QRCode("qrcode", {
@@ -173,7 +174,7 @@ export default {
         this.timeout = null;
       }
 
-      this.$router.push("/remoteupload2?devid=" + this.device_id);
+      this.$router.push("/LocalUpload?uploadType=local&devid=" + this.device_id);
     });
 
     //得到设备ID

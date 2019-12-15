@@ -15,7 +15,7 @@ var REMARK2='';
 var RETURNTYPE='2';
 var TIMEOUT='';
 //var PUB32TR2='bd0f9a0658b5640c37378787020111';
-var PUB32TR2='c60968eeb3ec741e68a8269b020111';
+var PUB32TR2='bb1fb62511a88300e8fc75c3020111';
 
 //var bankURL='http://128.128.96.175:8001/app/ccbMain?CCB_IBSVersion=V5'; //sit
 var bankURL = 'https://ibsbjstar.ccb.com.cn/CCBIS/ccbMain?CCB_IBSVersion=V6';
@@ -68,28 +68,7 @@ function make(ORDERID, PAYMENT){
 	var MAC = hex_md5(tmp);
 	URL = bankURL+'&'+tmp0+'&MAC='+MAC;
     
-	//document.getElementById("encry").value=tmp;
-   // document.getElementById("result").value=URL;
-
-	//document.getElementById("MACSTR").innerHTML = tmp;
-
-	//document.getElementById("MAC").value = hex_md5(tmp);
-	
-	//打开提交按钮
-	//document.getElementById("result").value=URL;
-	//document.getElementById("sendB").disabled=false;
-
-	//封闭MD5生成按钮
-   // document.getElementById("makeMd5").disabled=true;
-
    return URL
-}
-
-function go( sendUrl){
-	var objMD5form=document.getElementById("MD5form2");
-	objMD5form.method="post";
-	objMD5form.action=sendUrl;
-	objMD5form.submit();
 }
 
 function newRest(){

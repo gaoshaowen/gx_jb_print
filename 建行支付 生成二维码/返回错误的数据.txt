@@ -1,0 +1,15 @@
+查订单：
+<?xml version="1.0" encoding="GB18030"?>
+<TX>
+                <REQUEST_SN>1</REQUEST_SN>
+                <RETURN_CODE>YDCA02910001</RETURN_CODE>
+        <RETURN_MSG>流水记录不存在</RETURN_MSG>
+</TX>
+
+退款：
+<?xml version="1.0" encoding="GB18030"?>
+<TX>
+                <REQUEST_SN>2</REQUEST_SN>
+                                <RETURN_CODE>0130Z110W001</RETURN_CODE>
+        <RETURN_MSG>序列号错误</RETURN_MSG>
+</TX>
